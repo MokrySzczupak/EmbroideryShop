@@ -18,6 +18,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
+
+    annotationProcessor 'org.projectlombok:lombok'
 }
 
 test {
@@ -29,8 +31,8 @@ task generateProducts() {
         File dataSql = file("src/main/resources/data.sql");
         dataSql.write("");
         for (int i = 1; i <= 100; i++) {
-            dataSql.append("INSERT INTO PRODUCT(id, title, description, price) " +
-                    "VALUES(${i}, 'Title ${i}', 'Description ${i}', ${i * 5});\n");
+            dataSql.append("INSERT INTO PRODUCT(id, name, description, price) " +
+                    "VALUES(${i}, 'Name ${i}', 'Description ${i}', ${i * 5});\n");
         }
     }
 }
