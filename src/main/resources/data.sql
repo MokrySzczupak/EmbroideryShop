@@ -1,0 +1,1 @@
+INSERT INTO PRODUCT (id, title, description, price) VALUES (1, 'Product 1', 'Description of product 1', 10.20);
