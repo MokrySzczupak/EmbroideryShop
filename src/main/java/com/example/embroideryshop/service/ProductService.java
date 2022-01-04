@@ -31,4 +31,12 @@ public class ProductService {
     private String formatName(String name) {
         return "%" + name.toLowerCase() + "%";
     }
+
+    public Product addProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    public Product getProductById(long id) {
+        return productRepository.getById(id);
+    }
 }

@@ -4,10 +4,7 @@ import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.service.ProductService;
 import com.example.embroideryshop.service.SortCriteria;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,7 +23,7 @@ public class ProductController {
      *
      * @param sort template: property-sortDirection
      */
-    @GetMapping("/products/{name}")
+    @GetMapping("/products/search/{name}")
     public List<Product> getProductsByName(@PathVariable String name,
                                            @RequestParam(required = false) Integer page,
                                            @RequestParam(required = false) String sort) {
@@ -34,5 +31,15 @@ public class ProductController {
         String sortQuery = sort != null ? sort : "desc-id";
         SortCriteria sortCriteria = SortCriteria.fromQuery(sortQuery);
         return productService.getProductsWithName(name, pageNumber, sortCriteria);
+    }
+
+    @GetMapping("/products/{id}")
+    public Product getSingleProduct(@PathVariable long id) {
+        return productService.getProductById(id);
+    }
+
+    @PostMapping("/products")
+    public Product addProduct(@RequestBody Product product) {
+        return productService.addProduct(product);
     }
 }
