@@ -1,5 +1,6 @@
 package com.example.embroideryshop.controller;
 
+import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.service.ProductService;
 import com.example.embroideryshop.service.SortCriteria;
@@ -41,5 +42,10 @@ public class ProductController {
     @PostMapping("/products")
     public Product addProduct(@RequestBody Product product) {
         return productService.addProduct(product);
+    }
+
+    @PostMapping("/products/category")
+    public Category addCategory(@RequestBody Category category) {
+        return productService.addCategory(category);
     }
 }
