@@ -31,9 +31,16 @@ task generateProducts() {
     doLast {
         File dataSql = file("src/main/resources/data.sql");
         dataSql.write("");
+        // categories
+        for (int i = 1; i <= 6; i++) {
+            dataSql.append("INSERT INTO CATEGORY(category_id, name) " +
+                    "VALUES(${i}, 'Category ${i}');\n");
+        }
+        // products
         for (int i = 1; i <= 100; i++) {
-            dataSql.append("INSERT INTO PRODUCT(id, name, description, price) " +
-                    "VALUES(${i}, 'Name ${i}', 'Description ${i}', ${i * 5});\n");
+            int categoryId = 1 + i / 20;
+            dataSql.append("INSERT INTO PRODUCT(id, name, description, price, category_id) " +
+                    "VALUES(${i}, 'Name ${i}', 'Description ${i}', ${i * 5}, ${categoryId});\n");
         }
     }
 }

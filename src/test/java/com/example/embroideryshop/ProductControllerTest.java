@@ -1,6 +1,7 @@
 package com.example.embroideryshop;
 
 import com.example.embroideryshop.model.Product;
+import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,8 @@ public class ProductControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Test
     @Transactional
@@ -37,6 +40,7 @@ public class ProductControllerTest {
         newProduct.setName("Poduszka spersonalizowana");
         newProduct.setDescription("Produkt zawiera puch");
         newProduct.setPrice(55.0);
+        newProduct.setCategory(categoryRepository.findById(1L).get());
         productRepository.save(newProduct);
         // when
         MvcResult mvcResult = mockMvc.perform(get("/products/" + newProduct.getId()))
@@ -59,6 +63,7 @@ public class ProductControllerTest {
         Product newProduct = new Product();
         newProduct.setName("Poduszka spersonalizowana");
         newProduct.setPrice(55.0);
+        newProduct.setCategory(categoryRepository.findById(1L).get());
         productRepository.save(newProduct);
         // when
         MvcResult mvcResult = mockMvc.perform(get("/products/" + newProduct.getId()))
