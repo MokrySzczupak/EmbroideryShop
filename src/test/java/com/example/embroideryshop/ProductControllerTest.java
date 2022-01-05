@@ -5,6 +5,7 @@ import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
 import com.example.embroideryshop.service.CategoryAlreadyExistsException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import javax.transaction.Transactional;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -117,6 +120,24 @@ public class ProductControllerTest {
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof CategoryAlreadyExistsException))
                 .andExpect(result -> assertEquals("Kategoria '" + newCategoryDuplicate.getName() + "' już istnieje",
                                 result.getResolvedException().getMessage()));
+    }
+
+    @Test
+    @Transactional
+    public void shouldGetProductsByCategory() throws Exception {
+        Category newCategory = new Category();
+        newCategory.setName("testCategory");
+        categoryRepository.save(newCategory);
+
+        MvcResult mvcResult = mockMvc.perform(get("/products/category/" + newCategory.getName()))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<List<Product>>() {});
+        for (Product product: products) {
+            assertThat(product.getCategory().getName()).isEqualTo(newCategory.getName());
+        }
     }
 
 }

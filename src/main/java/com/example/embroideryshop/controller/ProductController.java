@@ -48,4 +48,19 @@ public class ProductController {
     public Category addCategory(@RequestBody Category category) {
         return productService.addCategory(category);
     }
+
+    @GetMapping("/products/category")
+    public List<Category> getAllCategories() {
+        return productService.getAllCategories();
+    }
+
+    @GetMapping("/products/category/{name}")
+    public List<Product> getProductsWithCategory(@PathVariable String name,
+                                                 @RequestParam(required = false) Integer page,
+                                                 @RequestParam(required = false) String sort) {
+        int pageNumber = page != null && page >= 0 ? page : 0;
+        String sortQuery = sort != null ? sort : "desc-id";
+        SortCriteria sortCriteria = SortCriteria.fromQuery(sortQuery);
+        return productService.getProductsWithCategory(name, pageNumber, sortCriteria);
+    }
 }

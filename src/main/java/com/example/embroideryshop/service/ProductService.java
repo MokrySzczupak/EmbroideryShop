@@ -64,4 +64,14 @@ public class ProductService {
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
+
+    public List<Product> getProductsWithCategory(String name, int pageNumber, SortCriteria sortCriteria) {
+        long categoryId = categoryRepository
+                .findByNameIgnoreCase(name)
+                .getCategoryId();
+        return productRepository
+                .findAllByCategory_CategoryId(categoryId,
+                        PageRequest.of(pageNumber, PAGE_SIZE,
+                                Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString())));
+    }
 }
