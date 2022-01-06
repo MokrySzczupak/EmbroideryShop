@@ -1,6 +1,5 @@
 package com.example.embroideryshop.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,8 +15,7 @@ public class Product {
     private String name;
     private String description;
     private double price;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "categoryId", nullable = false)
-    @JsonBackReference
     private Category category;
 }

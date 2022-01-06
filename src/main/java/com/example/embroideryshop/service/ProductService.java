@@ -75,4 +75,8 @@ public class ProductService {
                         PageRequest.of(pageNumber, PAGE_SIZE,
                                 Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString())));
     }
+
+    public void deleteProduct(long id) {
+        productRepository.deleteById(id);
+    }
 }

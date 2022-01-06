@@ -67,4 +67,9 @@ public class ProductController {
         SortCriteria sortCriteria = SortCriteria.fromQuery(sortQuery);
         return productService.getProductsWithCategory(name, pageNumber, sortCriteria);
     }
+
+    @DeleteMapping("/products/{id}")
+    public void deleteProduct(@PathVariable long id) {
+        productService.deleteProduct(id);
+    }
 }

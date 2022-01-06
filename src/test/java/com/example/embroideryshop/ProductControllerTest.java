@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import javax.transaction.Transactional;
@@ -23,10 +24,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/***
+ * Test database records are inserted from data.sql file
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 public class ProductControllerTest {
@@ -87,6 +90,28 @@ public class ProductControllerTest {
 
     @Test
     @Transactional
+    public void shouldGetProductsByName() throws Exception {
+        // given
+        String testName = "spersonalizowana";
+        Product newProduct = new Product();
+        newProduct.setName("Poduszka " + testName);
+        newProduct.setPrice(55.0);
+        newProduct.setCategory(categoryRepository.findById(1L).get());
+        productRepository.save(newProduct);
+        // when
+        MvcResult mvcResult = mockMvc.perform(get("/products/search/" + testName))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+        // then
+        List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<List<Product>>() {});
+        for (Product product: products) {
+            assertThat(product.getName()).contains("spersonalizowana");
+        }
+    }
+
+    @Test
+    @Transactional
     public void shouldAddCategory() throws Exception {
         Category newCategory = new Category();
         newCategory.setName("testCategory");
@@ -138,6 +163,16 @@ public class ProductControllerTest {
         for (Product product: products) {
             assertThat(product.getCategory().getName()).isEqualTo(newCategory.getName());
         }
+    }
+
+    @Test
+    public void shouldDeleteProduct() throws Exception {
+        long productId = 11;
+        this.mockMvc.perform(delete("/products/" + productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
     }
 
 }
