@@ -97,4 +97,19 @@ public class ProductService {
         categoryEdited.setName(category.getName());
         return categoryEdited;
     }
+
+    public void deleteCategory(long id) {
+        if (productWithCategoryExists(id)) {
+            throw new CategoryInUseException();
+        }
+        categoryRepository.deleteById(id);
+    }
+
+    public boolean productWithCategoryExists(long id) {
+        List<Product> productsWithCategory = productRepository.findAllByCategory_CategoryId(id, PageRequest.of(1, PAGE_SIZE));
+        if (!productsWithCategory.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
 }

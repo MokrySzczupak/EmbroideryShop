@@ -82,4 +82,8 @@ public class ProductController {
     public Category editCategory(@RequestBody Category category) {
         return productService.editCategory(category);
     }
+    @DeleteMapping("/products/category/{id}")
+    public void deleteCategory(@PathVariable long id) {
+        productService.deleteCategory(id);
+    }
 }

@@ -4,6 +4,7 @@ INSERT INTO CATEGORY(category_id, name) VALUES(3, 'Category 3');
 INSERT INTO CATEGORY(category_id, name) VALUES(4, 'Category 4');
 INSERT INTO CATEGORY(category_id, name) VALUES(5, 'Category 5');
 INSERT INTO CATEGORY(category_id, name) VALUES(6, 'Category 6');
+INSERT INTO CATEGORY(category_id, name) VALUES(7, 'Category 7');
 INSERT INTO PRODUCT(id, name, description, price, category_id) VALUES(1, 'Name 1', 'Description 1', 5, 1);
 INSERT INTO PRODUCT(id, name, description, price, category_id) VALUES(2, 'Name 2', 'Description 2', 10, 1);
 INSERT INTO PRODUCT(id, name, description, price, category_id) VALUES(3, 'Name 3', 'Description 3', 15, 1);

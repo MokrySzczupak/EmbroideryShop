@@ -5,6 +5,7 @@ import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
 import com.example.embroideryshop.service.CategoryAlreadyExistsException;
+import com.example.embroideryshop.service.CategoryInUseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -216,6 +217,27 @@ public class ProductControllerTest {
 
         Category category = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Category.class);
         assertThat(category.getName()).isEqualTo("testEditedCategory");
+    }
+
+    @Test
+    public void shouldDeleteCategory() throws Exception {
+        long categoryId = 7;
+        mockMvc.perform(delete("/products/category/" + categoryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void shouldThrowCategoryInUseException() throws Exception {
+        long categoryId = 1;
+        mockMvc.perform(delete("/products/category/" + categoryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isForbidden())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof CategoryInUseException));
     }
 
 }
