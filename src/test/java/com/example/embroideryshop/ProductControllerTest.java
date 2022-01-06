@@ -200,4 +200,22 @@ public class ProductControllerTest {
         assertThat(product.getCategory().getName()).isEqualTo("Category 1");
     }
 
+    @Test
+    public void shouldEditCategory() throws Exception {
+        Category editedCategory = new Category();
+        editedCategory.setCategoryId(1);
+        editedCategory.setName("testEditedCategory");
+
+        MvcResult mvcResult = mockMvc.perform(put("/products/category")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editedCategory)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Category category = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Category.class);
+        assertThat(category.getName()).isEqualTo("testEditedCategory");
+    }
+
 }

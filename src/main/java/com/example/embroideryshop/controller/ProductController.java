@@ -77,4 +77,9 @@ public class ProductController {
     public Product editProduct(@RequestBody Product product) {
         return productService.editProduct(product);
     }
+
+    @PutMapping("/products/category")
+    public Category editCategory(@RequestBody Category category) {
+        return productService.editCategory(category);
+    }
 }

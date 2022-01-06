@@ -88,4 +88,13 @@ public class ProductService {
         productEdited.setCategory(product.getCategory());
         return productEdited;
     }
+
+    public Category editCategory(Category category) {
+        if (categoryExists(category)) {
+            throw new CategoryAlreadyExistsException(category.getName());
+        }
+        Category categoryEdited = categoryRepository.findById(category.getCategoryId()).orElseThrow();
+        categoryEdited.setName(category.getName());
+        return categoryEdited;
+    }
 }
