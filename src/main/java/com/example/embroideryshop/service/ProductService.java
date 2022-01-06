@@ -79,4 +79,13 @@ public class ProductService {
     public void deleteProduct(long id) {
         productRepository.deleteById(id);
     }
+
+    public Product editProduct(Product product) {
+        Product productEdited = productRepository.findById(product.getId()).orElseThrow();
+        productEdited.setName(product.getName());
+        productEdited.setPrice(product.getPrice());
+        productEdited.setDescription(product.getDescription());
+        productEdited.setCategory(product.getCategory());
+        return productEdited;
+    }
 }

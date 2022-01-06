@@ -21,6 +21,7 @@ import javax.transaction.Transactional;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -168,11 +169,35 @@ public class ProductControllerTest {
     @Test
     public void shouldDeleteProduct() throws Exception {
         long productId = 11;
-        this.mockMvc.perform(delete("/products/" + productId)
+        mockMvc.perform(delete("/products/" + productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void shouldEditProduct() throws Exception {
+        Product editedProduct = new Product();
+        editedProduct.setId(12L);
+        editedProduct.setName("testEditedProduct");
+        editedProduct.setDescription("testDescription");
+        editedProduct.setPrice(29.99);
+        editedProduct.setCategory(categoryRepository.findByName("Category 1"));
+
+        MvcResult mvcResult = mockMvc.perform(put("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editedProduct)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Product product = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
+        assertThat(product.getName()).isEqualTo("testEditedProduct");
+        assertThat(product.getDescription()).isEqualTo("testDescription");
+        assertThat(product.getPrice()).isEqualTo(29.99);
+        assertThat(product.getCategory().getName()).isEqualTo("Category 1");
     }
 
 }
