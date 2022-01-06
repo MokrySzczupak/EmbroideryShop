@@ -19,8 +19,9 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final int PAGE_SIZE = 10;
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<Product> getAllProducts(int pageNumber, SortCriteria sortCriteria) {
+        return productRepository.findAllProducts(PageRequest.of(pageNumber, PAGE_SIZE,
+                Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString())));
     }
 
     public List<Product> getProductsWithName(String name, int pageNumber, SortCriteria sortCriteria) {

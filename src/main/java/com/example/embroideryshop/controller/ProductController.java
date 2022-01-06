@@ -16,8 +16,12 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/products")
-    public List<Product> getProducts() {
-        return productService.getAllProducts();
+    public List<Product> getProducts(@RequestParam(required = false) Integer page,
+                                     @RequestParam(required = false) String sort) {
+        int pageNumber = page != null && page >= 0 ? page : 0;
+        String sortQuery = sort != null ? sort : "desc-id";
+        SortCriteria sortCriteria = SortCriteria.fromQuery(sortQuery);
+        return productService.getAllProducts(pageNumber, sortCriteria);
     }
 
     /***
