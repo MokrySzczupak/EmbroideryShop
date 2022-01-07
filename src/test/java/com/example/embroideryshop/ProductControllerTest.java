@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /***
- * Test database records are inserted from data.sql file
+ * Test database records are inserted by liquibase
  */
 @SpringBootTest
 @AutoConfigureMockMvc
