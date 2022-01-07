@@ -13,6 +13,7 @@ public class Product {
     private String name;
     private String description;
     private double price;
+    private String mainImageName;
     @ManyToOne
     @JoinColumn(name = "categoryId", nullable = false)
     private Category category;

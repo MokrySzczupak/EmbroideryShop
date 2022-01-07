@@ -8,7 +8,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @Service
@@ -36,15 +44,39 @@ public class ProductService {
         return "%" + name.toLowerCase() + "%";
     }
 
-    public Product addProduct(Product product) {
+    public Product addProduct(Product product, MultipartFile multipartFile) throws IOException {
         setProperProductCategory(product);
-        return productRepository.save(product);
+
+        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+        product.setMainImageName(fileName);
+        Product savedProduct = productRepository.save(product);
+
+        String uploadDir = "./pictures/mainImages/" + savedProduct.getId();
+        Path uploadPath = Paths.get(uploadDir);
+        createDirectoriesIfNotExists(uploadPath);
+        Path filePath = uploadPath.resolve(fileName);
+        saveUploadedMultipartFile(multipartFile, filePath);
+        return savedProduct;
     }
 
     private void setProperProductCategory(Product product) {
         Category category = categoryRepository.findByName(product.getCategory().getName());
         if (category != null) {
             product.setCategory(category);
+        }
+    }
+
+    private void createDirectoriesIfNotExists(Path uploadPath) throws IOException {
+        if(!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+    }
+
+    private void saveUploadedMultipartFile(MultipartFile multipartFile, Path filePath) throws IOException {
+        try (InputStream inputStream = multipartFile.getInputStream()) {
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new IOException("Nie udało się zapisać pliku: " + multipartFile.getOriginalFilename());
         }
     }
 

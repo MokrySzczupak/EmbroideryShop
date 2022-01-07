@@ -13,16 +13,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import javax.transaction.Transactional;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashMap;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,29 +47,34 @@ public class ProductControllerTest {
     private ProductRepository productRepository;
     @Autowired
     private CategoryRepository categoryRepository;
+    private final String defaultMainFileName = "java-logo.png";
 
     @Test
     @Transactional
     public void shouldAddProduct() throws Exception {
         // given
+        FileInputStream fis = new FileInputStream("./src/test/resources/" + defaultMainFileName);
+        MockMultipartFile file = new MockMultipartFile("file", defaultMainFileName, "multipart/form-data", fis);
         Product newProduct = new Product();
         newProduct.setName("Poduszka spersonalizowana");
         newProduct.setDescription("Produkt zawiera puch");
         newProduct.setPrice(55.0);
         newProduct.setCategory(categoryRepository.findById(1L).get());
-        productRepository.save(newProduct);
+        newProduct.setMainImageName(file.getOriginalFilename());
+        System.out.println(newProduct);
         // when
-        MvcResult mvcResult = mockMvc.perform(get("/products/" + newProduct.getId()))
+        MvcResult mvcResult = mockMvc.perform(multipart("/products").file(file)
+                        .content(objectMapper.writeValueAsString(newProduct)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().is(200))
                 .andReturn();
         // then
         Product product = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
         assertThat(product).isNotNull();
-        assertThat(product.getId()).isEqualTo(newProduct.getId());
         assertThat(product.getName()).isEqualTo("Poduszka spersonalizowana");
         assertThat(product.getDescription()).isEqualTo("Produkt zawiera puch");
         assertThat(product.getPrice()).isEqualTo(55.0);
+        assertThat(product.getMainImageName()).isEqualTo(defaultMainFileName);
     }
 
     @Test
@@ -78,6 +85,7 @@ public class ProductControllerTest {
         newProduct.setName("Poduszka spersonalizowana");
         newProduct.setPrice(55.0);
         newProduct.setCategory(categoryRepository.findById(1L).get());
+        newProduct.setMainImageName(defaultMainFileName);
         productRepository.save(newProduct);
         // when
         MvcResult mvcResult = mockMvc.perform(get("/products/" + newProduct.getId()))
@@ -99,6 +107,7 @@ public class ProductControllerTest {
         newProduct.setName("Poduszka " + testName);
         newProduct.setPrice(55.0);
         newProduct.setCategory(categoryRepository.findById(1L).get());
+        newProduct.setMainImageName(defaultMainFileName);
         productRepository.save(newProduct);
         // when
         MvcResult mvcResult = mockMvc.perform(get("/products/search/" + testName))

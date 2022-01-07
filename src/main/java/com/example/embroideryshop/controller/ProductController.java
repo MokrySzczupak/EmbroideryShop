@@ -6,7 +6,9 @@ import com.example.embroideryshop.service.ProductService;
 import com.example.embroideryshop.service.SortCriteria;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -44,8 +46,9 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    public Product addProduct(@RequestBody Product product) {
-        return productService.addProduct(product);
+    public Product addProduct(@RequestBody Product product,
+                              @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        return productService.addProduct(product, multipartFile);
     }
 
     @PostMapping("/products/category")

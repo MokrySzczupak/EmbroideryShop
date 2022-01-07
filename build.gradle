@@ -32,15 +32,15 @@ task generateProducts() {
         File dataSql = file("src/main/resources/data.sql");
         dataSql.write("");
         // categories
-        for (int i = 1; i <= 6; i++) {
+        for (int i = 1; i <= 7; i++) {
             dataSql.append("INSERT INTO CATEGORY(category_id, name) " +
                     "VALUES(${i}, 'Category ${i}');\n");
         }
         // products
         for (int i = 1; i <= 100; i++) {
             int categoryId = 1 + i / 20;
-            dataSql.append("INSERT INTO PRODUCT(id, name, description, price, category_id) " +
-                    "VALUES(${i}, 'Name ${i}', 'Description ${i}', ${i * 5}, ${categoryId});\n");
+            dataSql.append("INSERT INTO PRODUCT(id, name, description, price, category_id, main_image_name) " +
+                    "VALUES(${i}, 'Name ${i}', 'Description ${i}', ${i * 5}, ${categoryId}, 'java-logo.png');\n");
         }
     }
 }
