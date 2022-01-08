@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -34,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser
 public class ProductControllerTest {
 
     @Autowired
@@ -209,6 +211,7 @@ public class ProductControllerTest {
     }
 
     @Test
+    @Transactional
     public void shouldEditCategory() throws Exception {
         Category editedCategory = new Category();
         editedCategory.setCategoryId(1);
@@ -227,6 +230,7 @@ public class ProductControllerTest {
     }
 
     @Test
+    @Transactional
     public void shouldDeleteCategory() throws Exception {
         long categoryId = 7;
         mockMvc.perform(delete("/products/category/" + categoryId)
