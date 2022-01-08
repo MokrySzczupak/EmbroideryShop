@@ -161,24 +161,23 @@ public class ProductControllerTest {
     @Test
     @Transactional
     public void shouldGetProductsByCategory() throws Exception {
-        Category newCategory = new Category();
-        newCategory.setName("testCategory");
-        categoryRepository.save(newCategory);
+        String categoryName = "Category 1";
 
-        MvcResult mvcResult = mockMvc.perform(get("/products/category/" + newCategory.getName()))
+        MvcResult mvcResult = mockMvc.perform(get("/products/category/" + categoryName))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
 
         List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<List<Product>>() {});
         for (Product product: products) {
-            assertThat(product.getCategory().getName()).isEqualTo(newCategory.getName());
+            assertThat(product.getCategory().getName()).isEqualTo(categoryName);
         }
     }
 
     @Test
+    @Transactional
     public void shouldDeleteProduct() throws Exception {
-        long productId = 11;
+        long productId = 15;
         mockMvc.perform(delete("/products/" + productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -187,6 +186,7 @@ public class ProductControllerTest {
     }
 
     @Test
+    @Transactional
     public void shouldEditProduct() throws Exception {
         Product editedProduct = new Product();
         editedProduct.setId(12L);

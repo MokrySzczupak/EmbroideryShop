@@ -61,9 +61,7 @@ public class ProductService {
 
     private void setProperProductCategory(Product product) {
         Category category = categoryRepository.findByName(product.getCategory().getName());
-        if (category != null) {
-            product.setCategory(category);
-        }
+        product.setCategory(category);
     }
 
     private void createDirectoriesIfNotExists(Path uploadPath) throws IOException {
@@ -116,6 +114,7 @@ public class ProductService {
         Product productEdited = productRepository.findById(product.getId()).orElseThrow();
         productEdited.setName(product.getName());
         productEdited.setPrice(product.getPrice());
+        productEdited.setMainImageName(product.getMainImageName());
         productEdited.setDescription(product.getDescription());
         productEdited.setCategory(product.getCategory());
         return productEdited;
@@ -137,7 +136,7 @@ public class ProductService {
         categoryRepository.deleteById(id);
     }
 
-    public boolean productWithCategoryExists(long id) {
+    private boolean productWithCategoryExists(long id) {
         List<Product> productsWithCategory = productRepository.findAllByCategory_CategoryId(id, PageRequest.of(1, PAGE_SIZE));
         if (!productsWithCategory.isEmpty()) {
             return true;
