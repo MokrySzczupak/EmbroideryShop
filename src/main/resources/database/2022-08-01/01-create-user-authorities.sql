@@ -15,5 +15,5 @@ CREATE TABLE AUTHORITIES (
     UNIQUE KEY username_authority (email, authority)
 );
 --changeset nwojtowicz:6
-INSERT INTO USER (id, email, username, password) VALUES (1, 'test@test.test', 'test', '{bcrypt}$2a$12$O58I/RhIHdGZF96XUsovCuFX4FscEQlS132gBRQtzLbDr2lfW3HSa');
+INSERT INTO USER (id, email, username, password) VALUES (1, 'test@test.test', 'test', '$2a$12$O58I/RhIHdGZF96XUsovCuFX4FscEQlS132gBRQtzLbDr2lfW3HSa');
 INSERT INTO AUTHORITIES (email, authority) VALUES ('test@test.test', 'USER');

@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
@@ -27,45 +28,40 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final RestAuthenticationSuccessHandler successHandler;
     private final RestAuthenticationFailureHandler failureHandler;
     private final UserDetailsServiceImpl userDetailsService;
-    private final UserAuthenticationProvider userAuthenticationProvider;
     private final String secret;
 
     public SecurityConfig(DataSource dataSource, ObjectMapper objectMapper, RestAuthenticationSuccessHandler successHandler,
                           RestAuthenticationFailureHandler failureHandler,
-                          UserAuthenticationProvider userAuthenticationProvider,
                           UserDetailsServiceImpl userDetailsService,
                           @Value("${jwt.secret}") String secret) {
         this.dataSource = dataSource;
         this.objectMapper = objectMapper;
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
-        this.userAuthenticationProvider = userAuthenticationProvider;
         this.userDetailsService = userDetailsService;
         this.secret = secret;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService);
         auth.jdbcAuthentication()
                 .dataSource(dataSource)
-                .and()
-                .userDetailsService(userDetailsService)
-                .and()
-                .authenticationProvider(userAuthenticationProvider);
+                .usersByUsernameQuery("select email,username,password from user where email = ?")
+                .authoritiesByUsernameQuery("select email,authority from authorities where email = ?");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
-                .mvcMatchers("/auth/signup").permitAll()
-                .mvcMatchers("/auth/signin").permitAll()
+                .mvcMatchers("/register").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(authenticationFilter())
-                .addFilter(new JwtAuthorizationFilter(userDetailsService, authenticationManager(), secret))
+                .addFilter(new JwtAuthorizationFilter(userDetailsService(), authenticationManager(), secret))
                 .exceptionHandling()
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and()
@@ -73,8 +69,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    public UserDetailsService userDetailsService() {
+        return userDetailsService;
+    }
+
+    @Override
     public void configure(WebSecurity web) throws Exception {
-        web.debug(true);
+//        web.debug(true);
     }
 
 

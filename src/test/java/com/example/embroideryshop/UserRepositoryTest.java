@@ -7,30 +7,30 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+
+import javax.transaction.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@Rollback(false)
+@SpringBootTest
 public class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private TestEntityManager entityManager;
-
     @Test
+    @Transactional
     public void shouldCreateUser() {
         User user = new User();
         user.setUsername("testUser");
         user.setPassword("testPassword");
         user.setEmail("tesUset@testUser.com");
 
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
 
-        User existUser = entityManager.find(User.class, savedUser.getId());
+        User existUser = userRepository.findUserByEmail("tesUset@testUser.com");
 
         assertThat(existUser.getEmail()).isEqualTo(user.getEmail());
     }

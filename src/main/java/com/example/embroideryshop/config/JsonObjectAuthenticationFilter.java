@@ -1,12 +1,10 @@
 package com.example.embroideryshop.config;
 
-import com.example.embroideryshop.model.User;
-import com.example.embroideryshop.model.UserDetailsImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,10 +29,9 @@ public class JsonObjectAuthenticationFilter extends UsernamePasswordAuthenticati
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
-            User auth = objectMapper.readValue(sb.toString(), User.class);
-            UserDetails authRequest = new UserDetailsImpl(auth);
+            LoginCredentials authRequest = objectMapper.readValue(sb.toString(), LoginCredentials.class);
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                    authRequest.getUsername(), authRequest.getPassword()
+                    authRequest.getEmail(), authRequest.getPassword()
             );
             setDetails(request, token);
             return this.getAuthenticationManager().authenticate(token);

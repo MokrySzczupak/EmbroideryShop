@@ -37,9 +37,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return userRepository.findUserByEmail(email) != null;
     }
 
-    public String signin(LoginCredentials loginCredentials) {
-        return "dupa";
-    }
 
     @Transactional(rollbackFor = Exception.class)
     public String signup(User user) {
