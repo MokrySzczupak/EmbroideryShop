@@ -1,4 +1,4 @@
-package com.example.embroideryshop.config;
+package com.example.embroideryshop.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

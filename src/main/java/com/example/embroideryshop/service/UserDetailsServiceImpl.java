@@ -1,6 +1,5 @@
 package com.example.embroideryshop.service;
 
-import com.example.embroideryshop.config.LoginCredentials;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.model.UserDetailsImpl;
 import com.example.embroideryshop.repository.UserRepository;

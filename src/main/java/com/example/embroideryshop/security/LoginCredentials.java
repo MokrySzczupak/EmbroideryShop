@@ -1,4 +1,4 @@
-package com.example.embroideryshop.config;
+package com.example.embroideryshop.security;
 
 import lombok.Getter;
 import lombok.Setter;
