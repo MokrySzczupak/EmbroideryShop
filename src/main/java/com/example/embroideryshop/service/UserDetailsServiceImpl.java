@@ -1,5 +1,6 @@
 package com.example.embroideryshop.service;
 
+import com.example.embroideryshop.exception.EmailInUseException;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.model.UserDetailsImpl;
 import com.example.embroideryshop.repository.UserRepository;
@@ -40,7 +41,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional(rollbackFor = Exception.class)
     public String signup(User user) {
         if (userExists(user.getEmail())) {
-            return null;
+            throw new EmailInUseException(user.getEmail());
         }
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return String.valueOf(save(user).getId());

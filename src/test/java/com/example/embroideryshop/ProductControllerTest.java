@@ -1,11 +1,11 @@
 package com.example.embroideryshop;
 
+import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
+import com.example.embroideryshop.exception.CategoryInUseException;
 import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
-import com.example.embroideryshop.service.CategoryAlreadyExistsException;
-import com.example.embroideryshop.service.CategoryInUseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -128,8 +128,8 @@ public class ProductControllerTest {
         newCategory.setName("testCategory");
 
         MvcResult mvcResult = mockMvc.perform(post("/products/category")
-                .content(objectMapper.writeValueAsString(newCategory))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(newCategory))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -150,12 +150,12 @@ public class ProductControllerTest {
         categoryRepository.save(newCategory);
 
         mockMvc.perform(post("/products/category")
-                .content(objectMapper.writeValueAsString(newCategoryDuplicate))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(newCategoryDuplicate))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof CategoryAlreadyExistsException))
                 .andExpect(result -> assertEquals("Kategoria '" + newCategoryDuplicate.getName() + "' już istnieje",
-                                result.getResolvedException().getMessage()));
+                        result.getResolvedException().getMessage()));
     }
 
     @Test

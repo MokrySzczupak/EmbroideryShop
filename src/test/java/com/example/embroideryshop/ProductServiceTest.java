@@ -1,5 +1,7 @@
 package com.example.embroideryshop;
 
+import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
+import com.example.embroideryshop.exception.CategoryInUseException;
 import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.repository.CategoryRepository;
