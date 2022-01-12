@@ -4,6 +4,7 @@ import com.example.embroideryshop.service.UserDetailsServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,6 +52,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.authorizeRequests()
                 .mvcMatchers("/register").permitAll()
+//                .mvcMatchers(HttpMethod.GET, "/products/category/**").hasAnyAuthority("USER", "ADMIN")
+                .mvcMatchers(HttpMethod.POST, "/products/category").hasAuthority("ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/products/category").hasAuthority("ADMIN")
+//                .mvcMatchers(HttpMethod.DELETE, "/products/category/**").hasAuthority("ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/products/**").hasAnyAuthority("USER", "ADMIN")
+                .mvcMatchers(HttpMethod.POST, "/products").hasAuthority("ADMIN")
+                .mvcMatchers(HttpMethod.DELETE, "/products/**").hasAuthority("ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/products").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
