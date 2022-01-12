@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(username = "admin@gmail.com", password = "test", authorities = "ADMIN")
 public class ProductControllerTest {
 
     @Autowired
@@ -154,8 +153,7 @@ public class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof CategoryAlreadyExistsException))
-                .andExpect(result -> assertEquals("Kategoria '" + newCategoryDuplicate.getName() + "' już istnieje",
-                        result.getResolvedException().getMessage()));
+                .andExpect(result -> assertThat(result.getResolvedException().getMessage()).contains("Kategoria '" + newCategoryDuplicate.getName() + "' już istnieje"));
     }
 
     @Test

@@ -1,11 +1,10 @@
 package com.example.embroideryshop.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-@ResponseStatus(HttpStatus.CONFLICT)
-public class CategoryAlreadyExistsException extends RuntimeException {
+public class CategoryAlreadyExistsException extends ResponseStatusException {
     public CategoryAlreadyExistsException(String category) {
-        super("Kategoria '" + category + "' już istnieje");
+        super(HttpStatus.CONFLICT, "Kategoria '" + category + "' już istnieje");
     }
 }

@@ -1,11 +1,10 @@
 package com.example.embroideryshop.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-@ResponseStatus(HttpStatus.CONFLICT)
-public class EmailInUseException extends RuntimeException{
+public class EmailInUseException extends ResponseStatusException {
     public EmailInUseException(String email) {
-        super("Email '" + email + "' jest zajęty");
+        super(HttpStatus.CONFLICT, "Email '" + email + "' jest zajęty");
     }
 }

@@ -2,10 +2,10 @@ package com.example.embroideryshop.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class CategoryInUseException extends RuntimeException {
+public class CategoryInUseException extends ResponseStatusException {
     public CategoryInUseException() {
-        super("Kategoria jest obecnie wykorzystywana przed inne produkty.");
+        super(HttpStatus.FORBIDDEN, "Kategoria jest obecnie wykorzystywana przed inne produkty.");
     }
 }
