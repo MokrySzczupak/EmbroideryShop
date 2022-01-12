@@ -52,11 +52,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.authorizeRequests()
                 .mvcMatchers("/register").permitAll()
-//                .mvcMatchers(HttpMethod.GET, "/products/category/**").hasAnyAuthority("USER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/products/**").permitAll()
                 .mvcMatchers(HttpMethod.POST, "/products/category").hasAuthority("ADMIN")
                 .mvcMatchers(HttpMethod.PUT, "/products/category").hasAuthority("ADMIN")
-//                .mvcMatchers(HttpMethod.DELETE, "/products/category/**").hasAuthority("ADMIN")
-                .mvcMatchers(HttpMethod.GET, "/products/**").hasAnyAuthority("USER", "ADMIN")
                 .mvcMatchers(HttpMethod.POST, "/products").hasAuthority("ADMIN")
                 .mvcMatchers(HttpMethod.DELETE, "/products/**").hasAuthority("ADMIN")
                 .mvcMatchers(HttpMethod.PUT, "/products").hasAuthority("ADMIN")

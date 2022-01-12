@@ -1,5 +1,6 @@
 package com.example.embroideryshop.model;
 
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+@Data
 public class UserDetailsImpl implements UserDetails {
 
     private User user;
@@ -25,6 +27,10 @@ public class UserDetailsImpl implements UserDetails {
             authorities.add(new SimpleGrantedAuthority(role.getName()));
         }
         return authorities;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     @Override

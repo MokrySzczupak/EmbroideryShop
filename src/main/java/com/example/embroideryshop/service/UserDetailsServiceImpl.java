@@ -5,6 +5,7 @@ import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.model.UserDetailsImpl;
 import com.example.embroideryshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -45,6 +46,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return String.valueOf(save(user).getId());
+    }
+
+    public User loadLoggedUser(Authentication auth) {
+        User user = userRepository.findUserByEmail(auth.getPrincipal().toString());
+
+        if (user == null) {
+            throw new UsernameNotFoundException("Użytkownik '" + auth.getPrincipal().toString() + "' nie istnieje");
+        }
+
+        return user;
     }
 
 }
