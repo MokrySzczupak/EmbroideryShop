@@ -1,4 +1,4 @@
-package com.example.embroideryshop;
+package com.example.embroideryshop.SortCriteria;
 
 
 import com.example.embroideryshop.service.ProductProperty;

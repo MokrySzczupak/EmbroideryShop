@@ -1,4 +1,4 @@
-package com.example.embroideryshop;
+package com.example.embroideryshop.Auth;
 
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.repository.UserRepository;

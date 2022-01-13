@@ -1,4 +1,4 @@
-package com.example.embroideryshop;
+package com.example.embroideryshop.Product;
 
 import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
 import com.example.embroideryshop.exception.CategoryInUseException;

@@ -1,4 +1,4 @@
-package com.example.embroideryshop;
+package com.example.embroideryshop.ShoppingCart;
 
 import com.example.embroideryshop.model.CartItem;
 import com.example.embroideryshop.model.Product;
@@ -16,7 +16,6 @@ import java.util.List;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//@Rollback(false)
 public class ShoppingCartTest {
 
     @Autowired
