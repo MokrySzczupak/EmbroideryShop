@@ -56,6 +56,11 @@ public class CartController {
         cartService.createCart(user, allItems);
     }
 
+    @PostMapping("/cart/complete/{id}")
+    public void completeCart(@PathVariable Long id) {
+        cartService.setCartCompleted(id);
+    }
+
     @GetMapping("/cart/all")
     public List<Cart> getAllCarts() {
         return cartService.getALlCarts();

@@ -58,18 +58,20 @@ public class CartService {
         Cart newCart = new Cart();
         newCart.setUser(user);
         newCart.setTotalPrice(0);
+        newCart.setCompleted(false);
         Cart cart = cartRepository.save(newCart);
         for (int i = 0; i < cartItems.size(); i++) {
             cartItems.get(i).setCart(cart);
-            System.out.println("Cart id: " + cart.getId());
-            System.out.println("Item: " + cartItems.get(i).getId() + " fk " + cartItems.get(i).getCart().getId());
             cartItems.get(i).setSold(true);
-//            cartItemRepository.save(cartItems.get(i));
         }
         return cart;
     }
 
     public List<Cart> getALlCarts() {
         return cartRepository.getAllCarts();
+    }
+
+    public void setCartCompleted(Long id) {
+        cartRepository.setCartCompleted(id);
     }
 }

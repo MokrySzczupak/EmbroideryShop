@@ -4,6 +4,7 @@ CREATE TABLE CART (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
   total_price DECIMAL NOT NULL,
+  completed BOOLEAN NOT NULL,
   constraint fk_cart_user FOREIGN KEY (user_id)
       REFERENCES USER(user_id)
 );
