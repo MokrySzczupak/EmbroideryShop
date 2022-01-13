@@ -21,4 +21,13 @@ public class Cart {
     private List<CartItem> cartItems;
 
     private double totalPrice;
+
+    @Transient
+    public double getTotalPrice() {
+        double total = 0.0;
+        for (CartItem cartItem: cartItems) {
+            total += cartItem.getSubtotal();
+        }
+        return total;
+    }
 }

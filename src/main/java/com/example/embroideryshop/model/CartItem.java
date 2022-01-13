@@ -31,4 +31,9 @@ public class CartItem {
     private Cart cart;
 
     private boolean sold;
+
+    @Transient
+    public double getSubtotal() {
+        return quantity * product.getPrice();
+    }
 }

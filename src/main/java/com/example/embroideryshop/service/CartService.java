@@ -54,10 +54,10 @@ public class CartService {
     }
 
     @Transactional
-    public void createCart(User user, List<CartItem> cartItems) {
+    public Cart createCart(User user, List<CartItem> cartItems) {
         Cart newCart = new Cart();
         newCart.setUser(user);
-        newCart.setTotalPrice(10.0);
+        newCart.setTotalPrice(0);
         Cart cart = cartRepository.save(newCart);
         for (int i = 0; i < cartItems.size(); i++) {
             cartItems.get(i).setCart(cart);
@@ -66,6 +66,7 @@ public class CartService {
             cartItems.get(i).setSold(true);
 //            cartItemRepository.save(cartItems.get(i));
         }
+        return cart;
     }
 
     public List<Cart> getALlCarts() {
