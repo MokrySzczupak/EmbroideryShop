@@ -1,6 +1,5 @@
 package com.example.embroideryshop.model;
 
-import com.sun.istack.NotNull;
 import lombok.Data;
 import javax.persistence.*;
 import java.util.HashSet;

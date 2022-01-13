@@ -1,5 +1,6 @@
 package com.example.embroideryshop.controller;
 
+import com.example.embroideryshop.model.Cart;
 import com.example.embroideryshop.model.CartItem;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.service.CartService;
@@ -38,7 +39,7 @@ public class CartController {
                                  @PathVariable("qty") Integer quantity,
                                  Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
-        cartService.updateQuantity(productId, quantity, user);
+        cartService.updateQuantity(productId, quantity, user.getId());
     }
 
     @DeleteMapping("/cart/remove/{pid}")
@@ -46,5 +47,17 @@ public class CartController {
                                  Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
         cartService.removeProduct(productId, user);
+    }
+
+    @PostMapping("/cart/finalize")
+    public void finalizeCart(Authentication auth) {
+        User user = userDetailsService.loadLoggedUser(auth);
+        List<CartItem> allItems = cartService.listCartItemsByUser(user);
+        cartService.createCart(user, allItems);
+    }
+
+    @GetMapping("/cart/all")
+    public List<Cart> getAllCarts() {
+        return cartService.getALlCarts();
     }
 }

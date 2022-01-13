@@ -1,12 +1,10 @@
 package com.example.embroideryshop.controller;
 
-import com.example.embroideryshop.exception.CategoryInUseException;
 import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.service.ProductService;
 import com.example.embroideryshop.service.SortCriteria;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 

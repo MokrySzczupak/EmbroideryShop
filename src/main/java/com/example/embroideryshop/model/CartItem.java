@@ -1,5 +1,6 @@
 package com.example.embroideryshop.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
@@ -23,4 +24,11 @@ public class CartItem {
     private User user;
 
     private int quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    @JsonBackReference
+    private Cart cart;
+
+    private boolean sold;
 }
