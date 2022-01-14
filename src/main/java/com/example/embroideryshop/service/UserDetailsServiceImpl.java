@@ -1,6 +1,7 @@
 package com.example.embroideryshop.service;
 
 import com.example.embroideryshop.exception.EmailInUseException;
+import com.example.embroideryshop.exception.NotValidEmailFormatException;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.model.UserDetailsImpl;
 import com.example.embroideryshop.repository.UserRepository;
@@ -41,11 +42,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Transactional(rollbackFor = Exception.class)
     public String signup(User user) {
+        if (!isEmailValid(user.getEmail())) {
+            throw new NotValidEmailFormatException();
+        }
         if (userExists(user.getEmail())) {
             throw new EmailInUseException(user.getEmail());
         }
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return String.valueOf(save(user).getId());
+    }
+
+    private boolean isEmailValid(String email) {
+        return email.matches(".*[@].*[.].*");
     }
 
     public User loadLoggedUser(Authentication auth) {

@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -100,9 +101,11 @@ public class ProductService {
     }
 
     public List<Product> getProductsWithCategory(String name, int pageNumber, SortCriteria sortCriteria) {
-        long categoryId = categoryRepository
-                .findByNameIgnoreCase(name)
-                .getCategoryId();
+        Category category = categoryRepository.findByNameIgnoreCase(name);
+        if (category == null) {
+            throw new NoSuchElementException();
+        }
+        long categoryId = category.getCategoryId();
         return productRepository
                 .findAllByCategory_CategoryId(categoryId,
                         PageRequest.of(pageNumber, PAGE_SIZE,

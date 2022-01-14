@@ -57,7 +57,8 @@ public class ProductServiceTest {
     @Transactional
     public void shouldDeleteProduct() {
         productService.deleteProduct(1L);
-        assertThatThrownBy(() -> productService.getProductById(1L)).isInstanceOf(NoSuchElementException.class);
+        Product product = productService.getProductById(1L);
+        assertThat(product).isNull();
     }
 
     @Test

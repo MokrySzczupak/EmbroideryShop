@@ -1,5 +1,6 @@
 package com.example.embroideryshop.service;
 
+import com.example.embroideryshop.exception.EmptyCartException;
 import com.example.embroideryshop.model.Cart;
 import com.example.embroideryshop.model.CartItem;
 import com.example.embroideryshop.model.Product;
@@ -55,6 +56,9 @@ public class CartService {
 
     @Transactional
     public Cart createCart(User user, List<CartItem> cartItems) {
+        if (cartItems.size() == 0) {
+            throw new EmptyCartException();
+        }
         Cart newCart = new Cart();
         newCart.setUser(user);
         newCart.setTotalPrice(0);
