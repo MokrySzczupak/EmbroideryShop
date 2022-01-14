@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -81,7 +82,7 @@ public class ProductService {
     }
 
     public Product getProductById(long id) {
-        return productRepository.findById(id).get();
+        return productRepository.findById(id).orElse(null);
     }
 
     public Category addCategory(Category category) {
@@ -112,6 +113,7 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
+    @Transactional
     public Product editProduct(Product product) {
         Product productEdited = productRepository.findById(product.getId()).orElseThrow();
         productEdited.setName(product.getName());
@@ -122,6 +124,7 @@ public class ProductService {
         return productEdited;
     }
 
+    @Transactional
     public Category editCategory(Category category) {
         if (categoryExists(category)) {
             throw new CategoryAlreadyExistsException(category.getName());
