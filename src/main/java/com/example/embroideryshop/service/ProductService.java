@@ -55,7 +55,7 @@ public class ProductService {
         product.setMainImageName(fileName);
         Product savedProduct = productRepository.save(product);
 
-        String uploadDir = "./pictures/mainImages/" + savedProduct.getId();
+        String uploadDir = "./src/main/resources/static/mainImages/" + savedProduct.getId();
         Path uploadPath = Paths.get(uploadDir);
         createDirectoriesIfNotExists(uploadPath);
         Path filePath = uploadPath.resolve(fileName);
