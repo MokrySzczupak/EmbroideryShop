@@ -48,7 +48,7 @@ public class ProductServiceTest {
 
     @Test
     public void shouldGetListOfProducts() {
-        List<Product> products = productService.getAllProducts(DEFAULT_PAGE, DEFAULT_SORT_CRITERIA);
+        List<Product> products = productService.getAllProducts(DEFAULT_PAGE, DEFAULT_SORT_CRITERIA).getProducts();
         assertThat(products).isNotNull();
         assertThat(products).isInstanceOf(products.getClass());
     }
@@ -86,7 +86,7 @@ public class ProductServiceTest {
 
     @Test
     public void shouldGetProductsByName() {
-        List<Product> products = productService.getProductsWithName("Name 4", DEFAULT_PAGE, DEFAULT_SORT_CRITERIA);
+        List<Product> products = productService.getProductsWithName("Name 4", DEFAULT_PAGE, DEFAULT_SORT_CRITERIA).getProducts();
         assertThat(products).isNotNull();
         for (Product product: products) {
             assertThat(product.getName()).contains("Name 4");
@@ -150,7 +150,7 @@ public class ProductServiceTest {
     public void shouldGetProductsWithCategory() {
         Category category = categoryRepository.findByName("Category 2");
         List<Product> products = productService.getProductsWithCategory(category.getName(),
-                DEFAULT_PAGE, DEFAULT_SORT_CRITERIA);
+                DEFAULT_PAGE, DEFAULT_SORT_CRITERIA).getProducts();
         for (Product product: products) {
             assertThat(product.getCategory()).isEqualTo(category);
         }

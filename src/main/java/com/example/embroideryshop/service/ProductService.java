@@ -1,5 +1,6 @@
 package com.example.embroideryshop.service;
 
+import com.example.embroideryshop.controller.dto.ProductPaginationDto;
 import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
 import com.example.embroideryshop.exception.CategoryInUseException;
 import com.example.embroideryshop.model.Category;
@@ -29,19 +30,29 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final int PAGE_SIZE = 10;
+    private final int PAGE_SIZE = 12;
 
-    public List<Product> getAllProducts(int pageNumber, SortCriteria sortCriteria) {
-        return productRepository.findAllProducts(PageRequest.of(pageNumber, PAGE_SIZE,
-                Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString())));
+    public ProductPaginationDto getAllProducts(int pageNumber, SortCriteria sortCriteria) {
+        List<Product> products = productRepository.findAllProducts(PageRequest.of(pageNumber, PAGE_SIZE,
+                Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString()))
+        );
+        int totalProducts = productRepository.countProductBy();
+        return createProductPaginationDto(products, pageNumber, totalProducts);
     }
 
-    public List<Product> getProductsWithName(String name, int pageNumber, SortCriteria sortCriteria) {
+    private ProductPaginationDto createProductPaginationDto(List<Product> products, int currentPage, int totalProducts) {
+        int totalPages = totalProducts / PAGE_SIZE + ((totalProducts % PAGE_SIZE == 0) ? 0 : 1);
+        return new ProductPaginationDto(products, totalProducts, totalPages, currentPage + 1);
+    }
+
+    public ProductPaginationDto getProductsWithName(String name, int pageNumber, SortCriteria sortCriteria) {
         name = formatName(name);
-        return productRepository.findAllByNameLikeIgnoreCase(name,
+        List<Product> products = productRepository.findAllByNameLikeIgnoreCase(name,
                 PageRequest.of(pageNumber, PAGE_SIZE,
                         Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString()))
         );
+        int totalProducts = productRepository.countProductByNameLikeIgnoreCase(name);
+        return createProductPaginationDto(products, pageNumber, totalProducts);
     }
 
     private String formatName(String name) {
@@ -100,16 +111,18 @@ public class ProductService {
         return categoryRepository.findAll();
     }
 
-    public List<Product> getProductsWithCategory(String name, int pageNumber, SortCriteria sortCriteria) {
+    public ProductPaginationDto getProductsWithCategory(String name, int pageNumber, SortCriteria sortCriteria) {
         Category category = categoryRepository.findByNameIgnoreCase(name);
         if (category == null) {
             throw new NoSuchElementException();
         }
         long categoryId = category.getCategoryId();
-        return productRepository
+        List<Product> products = productRepository
                 .findAllByCategory_CategoryId(categoryId,
                         PageRequest.of(pageNumber, PAGE_SIZE,
                                 Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString())));
+        int totalProducts = productRepository.countProductByCategory_CategoryId(categoryId);
+        return createProductPaginationDto(products, pageNumber, totalProducts);
     }
 
     public void deleteProduct(long id) {

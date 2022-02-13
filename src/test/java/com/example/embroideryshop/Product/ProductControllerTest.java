@@ -1,5 +1,6 @@
 package com.example.embroideryshop.Product;
 
+import com.example.embroideryshop.controller.dto.ProductPaginationDto;
 import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
 import com.example.embroideryshop.exception.CategoryInUseException;
 import com.example.embroideryshop.model.Category;
@@ -114,7 +115,7 @@ public class ProductControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         // then
-        List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<List<Product>>() {});
+        List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ProductPaginationDto.class).getProducts();
         for (Product product: products) {
             assertThat(product.getName()).contains("spersonalizowana");
         }
@@ -166,7 +167,7 @@ public class ProductControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<List<Product>>() {});
+        List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ProductPaginationDto.class).getProducts();
         for (Product product: products) {
             assertThat(product.getCategory().getName()).isEqualTo(categoryName);
         }

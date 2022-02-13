@@ -1,5 +1,6 @@
 package com.example.embroideryshop.controller;
 
+import com.example.embroideryshop.controller.dto.ProductPaginationDto;
 import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.service.ProductService;
@@ -18,8 +19,8 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/products")
-    public List<Product> getProducts(@RequestParam(required = false) Integer page,
-                                     @RequestParam(required = false) String sort) {
+    public ProductPaginationDto getProducts(@RequestParam(required = false) Integer page,
+                                            @RequestParam(required = false) String sort) {
         int pageNumber = page != null && page >= 0 ? page : 0;
         String sortQuery = sort != null ? sort : "desc-id";
         SortCriteria sortCriteria = SortCriteria.fromQuery(sortQuery);
@@ -31,7 +32,7 @@ public class ProductController {
      * @param sort template: property-sortDirection
      */
     @GetMapping("/products/search/{name}")
-    public List<Product> getProductsByName(@PathVariable String name,
+    public ProductPaginationDto getProductsByName(@PathVariable String name,
                                            @RequestParam(required = false) Integer page,
                                            @RequestParam(required = false) String sort) {
         int pageNumber = page != null && page >= 0 ? page : 0;
@@ -72,7 +73,7 @@ public class ProductController {
     }
 
     @GetMapping("/products/category/{name}")
-    public List<Product> getProductsWithCategory(@PathVariable String name,
+    public ProductPaginationDto getProductsWithCategory(@PathVariable String name,
                                                  @RequestParam(required = false) Integer page,
                                                  @RequestParam(required = false) String sort) {
         int pageNumber = page != null && page >= 0 ? page : 0;
@@ -90,4 +91,5 @@ public class ProductController {
     public void deleteCategory(@PathVariable long id) {
         productService.deleteCategory(id);
     }
+
 }
