@@ -3,6 +3,7 @@ package com.example.embroideryshop.service;
 import com.example.embroideryshop.controller.dto.ProductPaginationDto;
 import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
 import com.example.embroideryshop.exception.CategoryInUseException;
+import com.example.embroideryshop.exception.NoSuchProductException;
 import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.repository.CategoryRepository;
@@ -94,7 +95,11 @@ public class ProductService {
     }
 
     public Product getProductById(long id) {
-        return productRepository.findById(id).orElse(null);
+        Product product = productRepository.findById(id).orElse(null);
+        if (product == null) {
+            throw new NoSuchProductException();
+        }
+        return product;
     }
 
     public Category addCategory(Category category) {
