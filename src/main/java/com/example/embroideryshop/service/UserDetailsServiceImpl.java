@@ -2,6 +2,7 @@ package com.example.embroideryshop.service;
 
 import com.example.embroideryshop.exception.EmailInUseException;
 import com.example.embroideryshop.exception.NotValidEmailFormatException;
+import com.example.embroideryshop.exception.UserNotLoggedInException;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.model.UserDetailsImpl;
 import com.example.embroideryshop.repository.UserRepository;
@@ -57,6 +58,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     public User loadLoggedUser(Authentication auth) {
+        if (auth == null) {
+            throw new UserNotLoggedInException();
+        }
         User user = userRepository.findUserByEmail(auth.getPrincipal().toString());
 
         if (user == null) {
