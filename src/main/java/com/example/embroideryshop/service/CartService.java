@@ -47,7 +47,11 @@ public class CartService {
     }
 
     public void updateQuantity(long productId, int quantity, long userId) {
-        cartItemRepository.updateQuantity(quantity, productId, userId);
+        if (quantity <= 0) {
+            cartItemRepository.removeByUserAndProduct(userId, productId);
+        } else {
+            cartItemRepository.updateQuantity(quantity, productId, userId);
+        }
     }
 
     public void removeProduct(long productId, User user) {
