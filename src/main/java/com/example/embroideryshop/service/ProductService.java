@@ -4,10 +4,12 @@ import com.example.embroideryshop.controller.dto.ProductPaginationDto;
 import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
 import com.example.embroideryshop.exception.CategoryInUseException;
 import com.example.embroideryshop.exception.NoSuchProductException;
+import com.example.embroideryshop.exception.WrongProductJsonException;
 import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,6 +34,17 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final int PAGE_SIZE = 12;
+
+    public Product getJson(String product) {
+        Product productJson;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            productJson = objectMapper.readValue(product, Product.class);
+        } catch (IOException e) {
+            throw new WrongProductJsonException();
+        }
+        return productJson;
+    }
 
     public ProductPaginationDto getAllProducts(int pageNumber, SortCriteria sortCriteria) {
         List<Product> products = productRepository.findAllProducts(PageRequest.of(pageNumber, PAGE_SIZE,
@@ -60,8 +73,8 @@ public class ProductService {
         return "%" + name.toLowerCase() + "%";
     }
 
-    public Product addProduct(Product product, MultipartFile multipartFile) throws IOException {
-        setProperProductCategory(product);
+    public Product addProduct(Product product, String category, MultipartFile multipartFile) throws IOException {
+        setProperProductCategory(product, category);
 
         String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
         product.setMainImageName(fileName);
@@ -75,9 +88,9 @@ public class ProductService {
         return savedProduct;
     }
 
-    private void setProperProductCategory(Product product) {
-        Category category = categoryRepository.findByName(product.getCategory().getName());
-        product.setCategory(category);
+    private void setProperProductCategory(Product product, String category) {
+        Category properCategory = categoryRepository.findByName(category.replaceAll("\"", ""));
+        product.setCategory(properCategory);
     }
 
     private void createDirectoriesIfNotExists(Path uploadPath) throws IOException {

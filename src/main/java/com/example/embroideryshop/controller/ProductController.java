@@ -6,6 +6,7 @@ import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.service.ProductService;
 import com.example.embroideryshop.service.SortCriteria;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,10 +47,11 @@ public class ProductController {
         return productService.getProductById(id);
     }
 
-    @PostMapping("/products")
-    public Product addProduct(@RequestBody Product product,
-                              @RequestParam("file") MultipartFile multipartFile) throws IOException {
-        return productService.addProduct(product, multipartFile);
+    @PostMapping(value = "/products", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public Product addProduct(@RequestPart String product, @RequestPart String category,
+                              @RequestPart MultipartFile multipartFile) throws IOException {
+        Product productJson = productService.getJson(product);
+        return productService.addProduct(productJson, category, multipartFile);
     }
 
     @DeleteMapping("/products/{id}")

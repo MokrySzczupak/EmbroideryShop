@@ -99,7 +99,7 @@ public class ProductServiceTest {
         Product product = createTestProduct();
         System.out.println("shouldAddProduct: " + product.getCategory());
         MultipartFile multipartFile = createTestMultipartFile();
-        Product addedProduct = productService.addProduct(product, multipartFile);
+        Product addedProduct = productService.addProduct(product, product.getCategory().getName(), multipartFile);
         assertThat(product.getName()).isEqualTo("productName");
         assertThat(addedProduct.getCategory()).isEqualTo(categoryRepository.findByName("Category 2"));
         assertThat(addedProduct.getMainImageName()).isEqualTo(DEFAULT_FILE_NAME);
