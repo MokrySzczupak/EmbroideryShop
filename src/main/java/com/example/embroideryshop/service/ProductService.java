@@ -154,7 +154,7 @@ public class ProductService {
         productEdited.setPrice(product.getPrice());
         productEdited.setMainImageName(product.getMainImageName());
         productEdited.setDescription(product.getDescription());
-        productEdited.setCategory(product.getCategory());
+        setProperProductCategory(productEdited, product.getCategory().getName());
         return productEdited;
     }
 
