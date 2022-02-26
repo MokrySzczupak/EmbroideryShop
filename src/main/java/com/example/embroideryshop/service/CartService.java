@@ -82,4 +82,8 @@ public class CartService {
     public void setCartCompleted(Long id) {
         cartRepository.setCartCompleted(id);
     }
+
+    public Cart getCartById(Long id) {
+        return cartRepository.getSingleCartById(id);
+    }
 }

@@ -65,4 +65,9 @@ public class CartController {
     public List<Cart> getAllCarts() {
         return cartService.getALlCarts();
     }
+
+    @GetMapping("/cart/{id}")
+    public Cart getCartById(@PathVariable Long id) {
+        return cartService.getCartById(id);
+    }
 }

@@ -16,4 +16,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Query("UPDATE Cart c SET c.completed = true WHERE c.id = ?1")
     @Modifying
     void setCartCompleted(Long id);
+
+    @Query("SELECT c FROM Cart c WHERE c.id = ?1")
+    Cart getSingleCartById(Long id);
 }

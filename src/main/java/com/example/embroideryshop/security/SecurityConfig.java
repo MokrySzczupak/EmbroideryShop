@@ -66,6 +66,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.PUT, "/products").hasAuthority("ADMIN")
                 .mvcMatchers("/cart/all").hasAnyAuthority("ADMIN")
                 .mvcMatchers("/cart/complete/**").hasAuthority("ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/cart").authenticated()
+                .mvcMatchers(HttpMethod.GET, "/cart/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
