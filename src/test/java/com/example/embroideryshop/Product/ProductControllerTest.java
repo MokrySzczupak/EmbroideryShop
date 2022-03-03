@@ -7,7 +7,6 @@ import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,27 +53,32 @@ public class ProductControllerTest {
     public void shouldAddProduct() throws Exception {
         // given
         FileInputStream fis = new FileInputStream("./src/test/resources/" + defaultMainFileName);
-        MockMultipartFile file = new MockMultipartFile("file", defaultMainFileName, "multipart/form-data", fis);
-        Product newProduct = new Product();
-        newProduct.setName("Poduszka spersonalizowana");
-        newProduct.setDescription("Produkt zawiera puch");
-        newProduct.setPrice(55.0);
-        newProduct.setCategory(categoryRepository.findById(1L).get());
-        newProduct.setMainImageName(file.getOriginalFilename());
-        System.out.println(newProduct);
+        MockMultipartFile file = new MockMultipartFile("multipartFile", defaultMainFileName, "multipart/form-data", fis);
+        Product product = new Product();
+        product.setName("Poduszka spersonalizowana");
+        product.setDescription("Produkt zawiera puch");
+        product.setPrice(55.0);
+        product.setMainImageName(file.getOriginalFilename());
+        MockMultipartFile jsonProduct = new MockMultipartFile("product", "",
+                "application/json", objectMapper.writeValueAsString(product).getBytes());
+        MockMultipartFile jsonCategory = new MockMultipartFile("category", "",
+                "application/json", "Category 1".getBytes());
         // when
-        MvcResult mvcResult = mockMvc.perform(multipart("/products").file(file)
-                        .content(objectMapper.writeValueAsString(newProduct)).contentType(MediaType.APPLICATION_JSON))
+        MvcResult mvcResult = mockMvc.perform(multipart("/products")
+                        .file(file)
+                        .file(jsonProduct)
+                        .file(jsonCategory))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().is(200))
                 .andReturn();
         // then
-        Product product = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
-        assertThat(product).isNotNull();
-        assertThat(product.getName()).isEqualTo("Poduszka spersonalizowana");
-        assertThat(product.getDescription()).isEqualTo("Produkt zawiera puch");
-        assertThat(product.getPrice()).isEqualTo(55.0);
-        assertThat(product.getMainImageName()).isEqualTo(defaultMainFileName);
+        Product addedProduct = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
+        assertThat(addedProduct).isNotNull();
+        assertThat(addedProduct.getName()).isEqualTo("Poduszka spersonalizowana");
+        assertThat(addedProduct.getDescription()).isEqualTo("Produkt zawiera puch");
+        assertThat(addedProduct.getPrice()).isEqualTo(55.0);
+        assertThat(addedProduct.getCategory().getName()).isEqualTo("Category 1");
+        assertThat(addedProduct.getMainImageName()).isEqualTo(defaultMainFileName);
     }
 
     @Test

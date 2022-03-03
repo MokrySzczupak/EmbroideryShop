@@ -55,14 +55,6 @@ public class ProductServiceTest {
 
     @Test
     @Transactional
-    public void shouldDeleteProduct() {
-        productService.deleteProduct(1L);
-        Product product = productService.getProductById(1L);
-        assertThat(product).isNull();
-    }
-
-    @Test
-    @Transactional
     public void shouldEditProduct() {
         Product editedProduct = createEditedProduct();
         Product product = productService.editProduct(editedProduct);

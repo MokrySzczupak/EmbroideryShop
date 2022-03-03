@@ -1,6 +1,7 @@
 package com.example.embroideryshop.service;
 
 import com.example.embroideryshop.exception.EmptyCartException;
+import com.example.embroideryshop.exception.WrongQuantityException;
 import com.example.embroideryshop.model.Cart;
 import com.example.embroideryshop.model.CartItem;
 import com.example.embroideryshop.model.Product;
@@ -31,6 +32,9 @@ public class CartService {
     }
 
     public void addProduct(long productId, int quantity, User user) {
+        if (quantity <= 0) {
+            throw new WrongQuantityException();
+        }
         Product product = productService.getProductById(productId);
         CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product);
         if (cartItem != null && !cartItem.isSold()) {
