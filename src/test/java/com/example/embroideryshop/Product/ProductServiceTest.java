@@ -20,7 +20,6 @@ import javax.transaction.Transactional;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

@@ -15,11 +15,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/products")
 public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/products")
+    @GetMapping("/")
     public ProductPaginationDto getProducts(@RequestParam(required = false) Integer page,
                                             @RequestParam(required = false) String sort) {
         int pageNumber = page != null && page >= 0 ? page : 0;
@@ -32,7 +33,7 @@ public class ProductController {
      *
      * @param sort template: property-sortDirection
      */
-    @GetMapping("/products/search/{name}")
+    @GetMapping("/search/{name}")
     public ProductPaginationDto getProductsByName(@PathVariable String name,
                                            @RequestParam(required = false) Integer page,
                                            @RequestParam(required = false) String sort) {
@@ -42,39 +43,39 @@ public class ProductController {
         return productService.getProductsWithName(name, pageNumber, sortCriteria);
     }
 
-    @GetMapping("/products/{id}")
+    @GetMapping("/{id}")
     public Product getSingleProduct(@PathVariable long id) {
         return productService.getProductById(id);
     }
 
-    @PostMapping(value = "/products", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public Product addProduct(@RequestPart String product, @RequestPart String category,
                               @RequestPart MultipartFile multipartFile) throws IOException {
         Product productJson = productService.getJson(product);
         return productService.addProduct(productJson, category, multipartFile);
     }
 
-    @DeleteMapping("/products/{id}")
+    @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable long id) {
         productService.deleteProduct(id);
     }
 
-    @PutMapping("/products")
+    @PutMapping("/")
     public Product editProduct(@RequestBody Product product) {
         return productService.editProduct(product);
     }
 
-    @PostMapping("/products/category")
+    @PostMapping("/category")
     public Category addCategory(@RequestBody Category category) {
         return productService.addCategory(category);
     }
 
-    @GetMapping("/products/category")
+    @GetMapping("/category")
     public List<Category> getAllCategories() {
         return productService.getAllCategories();
     }
 
-    @GetMapping("/products/category/{name}")
+    @GetMapping("/category/{name}")
     public ProductPaginationDto getProductsWithCategory(@PathVariable String name,
                                                  @RequestParam(required = false) Integer page,
                                                  @RequestParam(required = false) String sort) {
@@ -84,12 +85,12 @@ public class ProductController {
         return productService.getProductsWithCategory(name, pageNumber, sortCriteria);
     }
 
-    @PutMapping("/products/category")
+    @PutMapping("/category")
     public Category editCategory(@RequestBody Category category) {
         return productService.editCategory(category);
     }
 
-    @DeleteMapping("/products/category/{id}")
+    @DeleteMapping("/category/{id}")
     public void deleteCategory(@PathVariable long id) {
         productService.deleteCategory(id);
     }

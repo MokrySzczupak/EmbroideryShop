@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/cart")
 public class CartController {
 
     @Autowired
@@ -20,13 +21,13 @@ public class CartController {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    @GetMapping("/cart")
+    @GetMapping("/")
     public List<CartItem> showCart(Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
         return cartService.listCartItemsByUser(user);
     }
 
-    @PostMapping("/cart/add/{pid}/{qty}")
+    @PostMapping("/add/{pid}/{qty}")
     public void addProductToCart(@PathVariable("pid") Long productId,
                                    @PathVariable("qty") Integer quantity,
                                    Authentication auth) {
@@ -34,7 +35,7 @@ public class CartController {
         cartService.addProduct(productId, quantity, user);
     }
 
-    @PutMapping("/cart/update/{pid}/{qty}")
+    @PutMapping("/update/{pid}/{qty}")
     public void updateQuantity(@PathVariable("pid") Long productId,
                                  @PathVariable("qty") Integer quantity,
                                  Authentication auth) {
@@ -42,31 +43,31 @@ public class CartController {
         cartService.updateQuantity(productId, quantity, user.getId());
     }
 
-    @DeleteMapping("/cart/remove/{pid}")
+    @DeleteMapping("/remove/{pid}")
     public void removeProductFromCart(@PathVariable("pid") Long productId,
                                  Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
         cartService.removeProduct(productId, user);
     }
 
-    @PostMapping("/cart/finalize")
+    @PostMapping("/finalize")
     public void finalizeCart(Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
         List<CartItem> allItems = cartService.listCartItemsByUser(user);
         cartService.createCart(user, allItems);
     }
 
-    @PostMapping("/cart/complete/{id}")
+    @PostMapping("/complete/{id}")
     public void completeCart(@PathVariable Long id) {
         cartService.setCartCompleted(id);
     }
 
-    @GetMapping("/cart/all")
+    @GetMapping("/all")
     public List<Cart> getAllCarts() {
         return cartService.getALlCarts();
     }
 
-    @GetMapping("/cart/{id}")
+    @GetMapping("/{id}")
     public Cart getCartById(@PathVariable Long id) {
         return cartService.getCartById(id);
     }

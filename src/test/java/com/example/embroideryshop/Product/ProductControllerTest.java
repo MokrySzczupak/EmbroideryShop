@@ -64,7 +64,7 @@ public class ProductControllerTest {
         MockMultipartFile jsonCategory = new MockMultipartFile("category", "",
                 "application/json", "Category 1".getBytes());
         // when
-        MvcResult mvcResult = mockMvc.perform(multipart("/products")
+        MvcResult mvcResult = mockMvc.perform(multipart("/products/")
                         .file(file)
                         .file(jsonProduct)
                         .file(jsonCategory))
@@ -198,7 +198,7 @@ public class ProductControllerTest {
         editedProduct.setPrice(29.99);
         editedProduct.setCategory(categoryRepository.findByName("Category 1"));
 
-        MvcResult mvcResult = mockMvc.perform(put("/products")
+        MvcResult mvcResult = mockMvc.perform(put("/products/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(editedProduct)))
