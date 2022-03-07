@@ -21,7 +21,7 @@ public class CartController {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    @GetMapping("/")
+    @GetMapping("")
     public List<CartItem> showCart(Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
         return cartService.listCartItemsByUser(user);
@@ -62,12 +62,12 @@ public class CartController {
         cartService.setCartCompleted(id);
     }
 
-    @GetMapping("/all")
+    @GetMapping("all")
     public List<Cart> getAllCarts() {
         return cartService.getALlCarts();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     public Cart getCartById(@PathVariable Long id) {
         return cartService.getCartById(id);
     }

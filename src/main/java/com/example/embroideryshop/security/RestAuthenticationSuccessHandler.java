@@ -18,12 +18,15 @@ import java.util.Date;
 public class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final long expirationTime;
+    private final long expirationTimeRefresh;
     private final String secret;
 
     public RestAuthenticationSuccessHandler(
             @Value("${jwt.expirationTime}") long expirationTime,
+            @Value("${jwt.expirationTimeRefresh}") long expirationTimeRefresh,
             @Value("${jwt.secret}") String secret) {
         this.expirationTime = expirationTime;
+        this.expirationTimeRefresh = expirationTimeRefresh;
         this.secret = secret;
     }
 
@@ -31,10 +34,25 @@ public class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         UserDetails principal = (UserDetails) authentication.getPrincipal();
-        String token = JWT.create()
-                .withSubject(principal.getUsername())
+        String accessToken = createAccessToken(principal.getUsername());
+        String refreshToken = createRefreshToken(principal.getUsername());
+        response.setHeader("Authorization", "Bearer " + accessToken + " refresh_token Bearer " + refreshToken);
+    }
+
+    private String createAccessToken(String username) {
+        return JWT.create()
+                .withSubject(username)
+                .withClaim("type", TokenType.ACCESS_TOKEN.name())
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .sign(Algorithm.HMAC256(secret));
-        response.setHeader("Authorization", "Bearer " + token);
     }
+
+    private String createRefreshToken(String username) {
+        return JWT.create()
+                .withSubject(username)
+                .withClaim("type", TokenType.REFRESH_TOKEN.name())
+                .withExpiresAt(new Date(System.currentTimeMillis() + expirationTimeRefresh))
+                .sign(Algorithm.HMAC256(secret));
+    }
+
 }

@@ -20,7 +20,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/")
+    @GetMapping("")
     public ProductPaginationDto getProducts(@RequestParam(required = false) Integer page,
                                             @RequestParam(required = false) String sort) {
         int pageNumber = page != null && page >= 0 ? page : 0;
@@ -43,24 +43,24 @@ public class ProductController {
         return productService.getProductsWithName(name, pageNumber, sortCriteria);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     public Product getSingleProduct(@PathVariable long id) {
         return productService.getProductById(id);
     }
 
-    @PostMapping(value = "/", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public Product addProduct(@RequestPart String product, @RequestPart String category,
                               @RequestPart MultipartFile multipartFile) throws IOException {
         Product productJson = productService.getJson(product);
         return productService.addProduct(productJson, category, multipartFile);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     public void deleteProduct(@PathVariable long id) {
         productService.deleteProduct(id);
     }
 
-    @PutMapping("/")
+    @PutMapping("")
     public Product editProduct(@RequestBody Product product) {
         return productService.editProduct(product);
     }

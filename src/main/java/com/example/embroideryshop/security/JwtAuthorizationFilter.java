@@ -2,6 +2,8 @@ package com.example.embroideryshop.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,11 +46,12 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
         String token = request.getHeader(TOKEN_HEADER);
         if (token != null && token.startsWith(TOKEN_PREFIX)) {
-            String userName = JWT.require(Algorithm.HMAC256(secret))
+            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secret))
                     .build()
-                    .verify(token.replace(TOKEN_PREFIX, ""))
-                    .getSubject();
-            if (userName != null) {
+                    .verify(token.replace(TOKEN_PREFIX, ""));
+            String userName = decodedJWT.getSubject();
+            Claim claim = decodedJWT.getClaim("type");
+            if (userName != null && claim.asString().equals(TokenType.ACCESS_TOKEN.name())) {
                 UserDetails user = userDetailsService.loadUserByUsername(userName);
                 return new UsernamePasswordAuthenticationToken(user.getUsername(), null, user.getAuthorities());
             }

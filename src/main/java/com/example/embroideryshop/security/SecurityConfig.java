@@ -58,6 +58,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors();
         http.authorizeRequests()
                 .mvcMatchers("/register").permitAll()
+                .mvcMatchers(HttpMethod.POST, "/token/refresh").permitAll()
                 .mvcMatchers(HttpMethod.GET, "/products/**").permitAll()
                 .mvcMatchers(HttpMethod.POST, "/products/category").hasAuthority("ADMIN")
                 .mvcMatchers(HttpMethod.PUT, "/products/category").hasAuthority("ADMIN")
@@ -68,7 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/cart/complete/**").hasAuthority("ADMIN")
                 .mvcMatchers(HttpMethod.GET, "/cart").authenticated()
                 .mvcMatchers(HttpMethod.GET, "/cart/**").hasAuthority("ADMIN")
-                .anyRequest().authenticated()
+                .anyRequest().hasAnyAuthority("ADMIN", "USER")
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()

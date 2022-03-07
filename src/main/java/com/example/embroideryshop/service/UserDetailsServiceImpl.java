@@ -3,6 +3,7 @@ package com.example.embroideryshop.service;
 import com.example.embroideryshop.exception.EmailInUseException;
 import com.example.embroideryshop.exception.NotValidEmailFormatException;
 import com.example.embroideryshop.exception.UserNotLoggedInException;
+import com.example.embroideryshop.model.Role;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.model.UserDetailsImpl;
 import com.example.embroideryshop.repository.UserRepository;
@@ -15,11 +16,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final RoleService roleService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
@@ -40,7 +44,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return userRepository.findUserByEmail(email) != null;
     }
 
-
     @Transactional(rollbackFor = Exception.class)
     public String signup(User user) {
         if (!isEmailValid(user.getEmail())) {
@@ -49,6 +52,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (userExists(user.getEmail())) {
             throw new EmailInUseException(user.getEmail());
         }
+        Role userRole = roleService.getRoleByName("USER");
+        user.setRoles(Set.of(userRole));
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return String.valueOf(save(user).getId());
     }
