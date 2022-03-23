@@ -11,6 +11,7 @@ import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final int PAGE_SIZE = 12;
+    @Value("${path.staticResources}")
+    private final String resourcePath;
 
     public Product getJson(String product) {
         Product productJson;
@@ -80,7 +83,7 @@ public class ProductService {
         product.setMainImageName(fileName);
         Product savedProduct = productRepository.save(product);
 
-        String uploadDir = "./src/main/resources/static/mainImages/" + savedProduct.getId();
+        String uploadDir = resourcePath  + "mainImages/" + savedProduct.getId();
         Path uploadPath = Paths.get(uploadDir);
         createDirectoriesIfNotExists(uploadPath);
         Path filePath = uploadPath.resolve(fileName);
