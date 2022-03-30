@@ -36,7 +36,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final int PAGE_SIZE = 12;
     @Value("${path.staticResources}")
-    private final String resourcePath;
+    private String resourcePath;
 
     public Product getJson(String product) {
         Product productJson;

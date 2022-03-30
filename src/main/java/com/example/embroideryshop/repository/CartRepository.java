@@ -19,4 +19,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("SELECT c FROM Cart c WHERE c.id = ?1")
     Cart getSingleCartById(Long id);
+
+    @Query("SELECT c FROM Cart c WHERE c.user.id = ?1 AND c.paid = false")
+    Cart getCartByUser(Long id);
 }

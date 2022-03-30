@@ -24,7 +24,7 @@ public class CartController {
     @GetMapping("")
     public List<CartItem> showCart(Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
-        return cartService.listCartItemsByUser(user);
+        return cartService.getCartItemsForUser(user);
     }
 
     @PostMapping("/add/{pid}/{qty}")
@@ -47,14 +47,13 @@ public class CartController {
     public void removeProductFromCart(@PathVariable("pid") Long productId,
                                  Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
-        cartService.removeProduct(productId, user);
+        cartService.removeProduct(productId, user.getId());
     }
 
     @PostMapping("/finalize")
     public void finalizeCart(Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
-        List<CartItem> allItems = cartService.listCartItemsByUser(user);
-        cartService.createCart(user, allItems);
+        cartService.finalizeCart(user);
     }
 
     @PostMapping("/complete/{id}")
@@ -64,7 +63,7 @@ public class CartController {
 
     @GetMapping("all")
     public List<Cart> getAllCarts() {
-        return cartService.getALlCarts();
+        return cartService.getAllCarts();
     }
 
     @GetMapping("{id}")

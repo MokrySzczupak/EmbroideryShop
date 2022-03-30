@@ -26,6 +26,8 @@ public class Cart {
 
     private boolean completed;
 
+    private boolean paid;
+
     @Transient
     public double getTotalPrice() {
         double total = 0.0;

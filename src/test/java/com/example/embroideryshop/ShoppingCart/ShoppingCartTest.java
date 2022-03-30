@@ -63,16 +63,16 @@ public class ShoppingCartTest {
     @Test
     @Transactional
     public void shouldUpdateQuantity() {
-        Product product = entityManager.find(Product.class, 20L);
+        Product product = entityManager.find(Product.class, 1L);
         User user = entityManager.find(User.class, 2L);
-        cartItemRepository.updateQuantity(10, 20L, 2);
+        cartItemRepository.updateQuantity(10, 1L, 2);
         CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product);
         assertThat(cartItem.getQuantity()).isEqualTo(10);
     }
 
     @Test
     public void shouldGetCartItemByUserAndProduct() {
-        Product product = entityManager.find(Product.class, 20L);
+        Product product = entityManager.find(Product.class, 1L);
         User user = entityManager.find(User.class, 2L);
         CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product);
         assertThat(cartItem).isNotNull();

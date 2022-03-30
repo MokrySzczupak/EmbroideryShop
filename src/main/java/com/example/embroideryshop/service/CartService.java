@@ -8,11 +8,13 @@ import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.repository.CartItemRepository;
 import com.example.embroideryshop.repository.CartRepository;
+import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -31,55 +33,45 @@ public class CartService {
         return cartItemRepository.findByUser(user);
     }
 
+    @Transactional
     public void addProduct(long productId, int quantity, User user) {
         if (quantity <= 0) {
             throw new WrongQuantityException();
         }
+        Cart cart = Optional.ofNullable(cartRepository.getCartByUser(user.getId()))
+                .orElseGet(() -> createCartForUser(user));
         Product product = productService.getProductById(productId);
-        CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product);
-        if (cartItem != null && !cartItem.isSold()) {
-            quantity = cartItem.getQuantity() + quantity;
-            cartItem.setQuantity(quantity);
-        } else {
-            cartItem = new CartItem();
-            cartItem.setProduct(product);
-            cartItem.setUser(user);
-            cartItem.setQuantity(quantity);
-            cartItem.setSold(false);
-        }
-        cartItemRepository.save(cartItem);
+        CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user, product))
+                .orElseGet(() -> {
+                    CartItem newCartItem = new CartItem();
+                    newCartItem.setProduct(product);
+                    newCartItem.setCart(cart);
+                    newCartItem.setUser(user);
+                    return cartItemRepository.save(newCartItem);
+                });
+        quantity = cartItem.getQuantity() + quantity;
+        cartItem.setQuantity(quantity);
     }
 
     public void updateQuantity(long productId, int quantity, long userId) {
         if (quantity <= 0) {
-            cartItemRepository.removeByUserAndProduct(userId, productId);
+            removeProduct(userId, productId);
         } else {
             cartItemRepository.updateQuantity(quantity, productId, userId);
         }
     }
 
-    public void removeProduct(long productId, User user) {
-        cartItemRepository.removeByUserAndProduct(user.getId(), productId);
+    public void removeProduct(long productId, long userId) {
+        cartItemRepository.removeByUserAndProduct(userId, productId);
     }
 
-    @Transactional
-    public Cart createCart(User user, List<CartItem> cartItems) {
-        if (cartItems.size() == 0) {
-            throw new EmptyCartException();
-        }
+    public Cart createCartForUser(User user) {
         Cart newCart = new Cart();
         newCart.setUser(user);
-        newCart.setTotalPrice(0);
-        newCart.setCompleted(false);
-        Cart cart = cartRepository.save(newCart);
-        for (int i = 0; i < cartItems.size(); i++) {
-            cartItems.get(i).setCart(cart);
-            cartItems.get(i).setSold(true);
-        }
-        return cart;
+        return cartRepository.save(newCart);
     }
 
-    public List<Cart> getALlCarts() {
+    public List<Cart> getAllCarts() {
         return cartRepository.getAllCarts();
     }
 
@@ -89,5 +81,15 @@ public class CartService {
 
     public Cart getCartById(Long id) {
         return cartRepository.getSingleCartById(id);
+    }
+
+    public void finalizeCart(User user) {
+        Cart cart = cartRepository.getCartByUser(user.getId());
+        cart.setPaid(true);
+    }
+
+    public List<CartItem> getCartItemsForUser(User user) {
+        Cart cart = cartRepository.getCartByUser(user.getId());
+        return cart.getCartItems();
     }
 }
