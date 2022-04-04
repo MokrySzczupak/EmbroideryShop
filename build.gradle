@@ -27,6 +27,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'com.stripe:stripe-java:20.106.0'
 }
 
 test {

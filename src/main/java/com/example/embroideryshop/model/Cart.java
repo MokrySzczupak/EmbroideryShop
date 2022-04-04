@@ -28,12 +28,12 @@ public class Cart {
 
     private boolean paid;
 
-    @Transient
-    public double getTotalPrice() {
-        double total = 0.0;
-        for (CartItem cartItem: cartItems) {
-            total += cartItem.getSubtotal();
-        }
-        return total;
-    }
+//    @Transient
+//    public double getTotalPrice() {
+//        double total = 0.0;
+//        for (CartItem cartItem: cartItems) {
+//            total += cartItem.getSubtotal();
+//        }
+//        return total;
+//    }
 }
