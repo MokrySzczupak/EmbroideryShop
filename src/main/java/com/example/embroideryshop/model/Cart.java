@@ -1,6 +1,8 @@
 package com.example.embroideryshop.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,12 +30,25 @@ public class Cart {
 
     private boolean paid;
 
-//    @Transient
-//    public double getTotalPrice() {
-//        double total = 0.0;
-//        for (CartItem cartItem: cartItems) {
-//            total += cartItem.getSubtotal();
-//        }
-//        return total;
-//    }
+    private String clientSecret;
+
+    public void setClientSecret(String clientSecret) throws StripeException {
+        if (this.clientSecret == null) {
+            this.clientSecret = clientSecret;
+            return;
+        }
+        PaymentIntent paymentMethod = PaymentIntent.retrieve(this.clientSecret);
+        String status = paymentMethod.getStatus();
+        switch(status) {
+            case "succeeded":
+            case "requires_confirmation":
+            case "requires_action":
+            case "processing":
+            case "requires_payment_method":
+                break;
+            default:
+                this.clientSecret = clientSecret;
+                break;
+        }
+    }
 }

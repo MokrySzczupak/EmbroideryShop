@@ -89,7 +89,12 @@ public class CartService {
     }
 
     public List<CartItem> getCartItemsForUser(User user) {
-        Cart cart = cartRepository.getCartByUser(user.getId());
+        Cart cart = getCartForUser(user);
         return cart.getCartItems();
+    }
+
+    public Cart getCartForUser(User user) {
+        return Optional.ofNullable(cartRepository.getCartByUser(user.getId()))
+                .orElseThrow(EmptyCartException::new);
     }
 }
