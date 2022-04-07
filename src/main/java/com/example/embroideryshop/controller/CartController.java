@@ -47,7 +47,7 @@ public class CartController {
     public void removeProductFromCart(@PathVariable("pid") Long productId,
                                  Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
-        cartService.removeProduct(productId, user.getId());
+        cartService.removeProduct(user.getId(), productId);
     }
 
     @PostMapping("/finalize")
