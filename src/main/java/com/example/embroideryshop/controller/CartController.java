@@ -5,6 +5,7 @@ import com.example.embroideryshop.model.CartItem;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.service.CartService;
 import com.example.embroideryshop.service.UserDetailsServiceImpl;
+import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +52,7 @@ public class CartController {
     }
 
     @PostMapping("/finalize")
-    public void finalizeCart(Authentication auth) {
+    public void finalizeCart(Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
         cartService.finalizeCart(user);
     }

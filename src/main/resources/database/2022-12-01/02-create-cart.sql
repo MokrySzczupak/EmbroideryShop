@@ -6,7 +6,7 @@ CREATE TABLE cart (
   total_price DECIMAL NOT NULL,
   completed BOOLEAN NOT NULL,
   paid BOOLEAN NOT NULL,
-  client_secret VARCHAR(100) NULL,
+  payment_id VARCHAR(100) NULL,
   constraint fk_cart_user FOREIGN KEY (user_id)
       REFERENCES user(user_id)
 );

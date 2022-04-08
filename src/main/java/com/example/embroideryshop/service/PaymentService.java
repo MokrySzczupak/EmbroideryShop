@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -22,13 +23,15 @@ public class PaymentService {
     String stripeApiKey;
     @Autowired
     private CartService cartService;
+    private final int SHIPPING_PRICE = 15;
 
+    @Transactional
     public String createPaymentIntent(User user) throws StripeException {
         Stripe.apiKey = stripeApiKey;
-        Cart cart = cartService.getCartForUser(user);
+        Cart cart = cartService.getFilledCartForUser(user);
         PaymentIntentCreateParams params = createPaymentParams(user, cart);
         PaymentIntent paymentIntent = PaymentIntent.create(params);
-        cart.setClientSecret(paymentIntent.getClientSecret());
+        cart.setPaymentId(paymentIntent.getId());
         return paymentIntent.getClientSecret();
     }
 
@@ -43,7 +46,7 @@ public class PaymentService {
 
     private long calculateCartItemsPrice(Cart cart) {
         List<CartItem> cartItems = cart.getCartItems();
-        BigDecimal price = BigDecimal.ZERO;
+        BigDecimal price = BigDecimal.valueOf(SHIPPING_PRICE);
         for (CartItem cartItem: cartItems) {
             price = price.add(cartItem.getSubtotal());
         }

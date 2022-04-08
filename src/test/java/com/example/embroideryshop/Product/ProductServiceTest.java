@@ -19,6 +19,7 @@ import javax.transaction.Transactional;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +61,7 @@ public class ProductServiceTest {
         assertThat(product).isNotNull();
         assertThat(product.getId()).isEqualTo(2);
         assertThat(product.getName()).isEqualTo("productEdited");
-        assertThat(product.getPrice()).isEqualTo(22.22);
+        assertThat(product.getPrice()).isEqualTo(BigDecimal.valueOf(22.22));
         assertThat(product.getMainImageName()).isEqualTo("java-logoEdited.png");
         assertThat(product.getCategory()).isEqualTo(categoryRepository.findByName("Category 2"));
     }
@@ -71,7 +72,7 @@ public class ProductServiceTest {
         editedProduct.setMainImageName("java-logoEdited.png");
         editedProduct.setName("productEdited");
         editedProduct.setCategory(categoryRepository.findByName("Category 2"));
-        editedProduct.setPrice(22.22);
+        editedProduct.setPrice(BigDecimal.valueOf(22.22));
         return editedProduct;
     }
 
@@ -104,7 +105,7 @@ public class ProductServiceTest {
     public Product createTestProduct() {
         Product product = new Product();
         product.setName("productName");
-        product.setPrice(22.22);
+        product.setPrice(BigDecimal.valueOf(22.22));
         product.setCategory(categoryRepository.findByName("Category 2"));
         return product;
     }

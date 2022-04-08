@@ -1,5 +1,6 @@
 package com.example.embroideryshop.service;
 
+import com.example.embroideryshop.exception.CartNotPaidException;
 import com.example.embroideryshop.exception.EmptyCartException;
 import com.example.embroideryshop.exception.NoSuchCartItemException;
 import com.example.embroideryshop.exception.WrongQuantityException;
@@ -9,7 +10,11 @@ import com.example.embroideryshop.model.Product;
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.repository.CartItemRepository;
 import com.example.embroideryshop.repository.CartRepository;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,10 +34,8 @@ public class CartService {
 
     @Autowired
     private ProductService productService;
-
-    public List<CartItem> listCartItemsByUser(User user) {
-        return cartItemRepository.findByUser(user);
-    }
+    @Value("${Stripe.apiKey}")
+    String stripeApiKey;
 
     @Transactional
     public void addProduct(long productId, int quantity, User user) {
@@ -90,10 +93,19 @@ public class CartService {
     }
 
     @Transactional
-    public void finalizeCart(User user) {
+    public void finalizeCart(User user) throws StripeException {
         Cart cart = cartRepository.getCartByUser(user.getId());
+        checkCartPayment(cart);
         cart.getCartItems().forEach((cartItem) -> cartItem.setSold(true));
         cart.setPaid(true);
+    }
+
+    private void checkCartPayment(Cart cart) throws StripeException {
+        Stripe.apiKey = stripeApiKey;
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(cart.getPaymentId());
+        if (!"succeeded".equals(paymentIntent.getStatus())) {
+            throw new CartNotPaidException();
+        }
     }
 
     public List<CartItem> getCartItemsForUser(User user) {

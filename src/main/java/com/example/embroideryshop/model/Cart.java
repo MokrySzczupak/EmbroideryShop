@@ -30,15 +30,16 @@ public class Cart {
 
     private boolean paid;
 
-    private String clientSecret;
+    private String paymentId;
 
-    public void setClientSecret(String clientSecret) throws StripeException {
-        if (this.clientSecret == null) {
-            this.clientSecret = clientSecret;
+    public void setPaymentId(String paymentId) throws StripeException {
+        if (this.paymentId == null) {
+            this.paymentId = paymentId;
             return;
         }
-        PaymentIntent paymentMethod = PaymentIntent.retrieve(this.clientSecret);
+        PaymentIntent paymentMethod = PaymentIntent.retrieve(this.paymentId);
         String status = paymentMethod.getStatus();
+        System.out.println("----------------------------------------Status: " + status);
         switch(status) {
             case "succeeded":
             case "requires_confirmation":
@@ -47,7 +48,7 @@ public class Cart {
             case "requires_payment_method":
                 break;
             default:
-                this.clientSecret = clientSecret;
+                this.paymentId = paymentId;
                 break;
         }
     }
