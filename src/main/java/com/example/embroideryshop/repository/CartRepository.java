@@ -15,11 +15,14 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("UPDATE Cart c SET c.completed = true WHERE c.id = ?1")
     @Modifying
-    void setCartCompleted(Long id);
+    void setCartCompleted(Long cartId);
 
     @Query("SELECT c FROM Cart c WHERE c.id = ?1")
-    Cart getSingleCartById(Long id);
+    Cart getSingleCartById(Long cartId);
 
     @Query("SELECT c FROM Cart c WHERE c.user.id = ?1 AND c.paid = false")
-    Cart getCartByUser(Long id);
+    Cart getCartByUser(Long userId);
+
+    @Query("SELECT c FROM Cart c WHERE c.user.id = ?1 AND c.paid = true")
+    List<Cart> getAllCartsForUser(Long userId);
 }

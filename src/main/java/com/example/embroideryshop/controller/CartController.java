@@ -71,4 +71,10 @@ public class CartController {
     public Cart getCartById(@PathVariable Long id) {
         return cartService.getCartById(id);
     }
+
+    @GetMapping("/all/user")
+    public List<Cart> getAllCartsForUser(Authentication auth) throws StripeException {
+        User user = userDetailsService.loadLoggedUser(auth);
+        return cartService.getAllCartsForUser(user);
+    }
 }

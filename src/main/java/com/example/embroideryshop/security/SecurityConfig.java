@@ -68,6 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/cart/all").hasAnyAuthority("ADMIN")
                 .mvcMatchers("/cart/complete/**").hasAuthority("ADMIN")
                 .mvcMatchers(HttpMethod.GET, "/cart").authenticated()
+                .mvcMatchers(HttpMethod.GET, "/cart/all/user").authenticated()
                 .mvcMatchers(HttpMethod.GET, "/cart/**").hasAuthority("ADMIN")
                 .anyRequest().hasAnyAuthority("ADMIN", "USER")
                 .and()

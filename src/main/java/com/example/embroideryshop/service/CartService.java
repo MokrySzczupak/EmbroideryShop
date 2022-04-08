@@ -122,4 +122,16 @@ public class CartService {
         return Optional.ofNullable(cartRepository.getCartByUser(user.getId()))
                 .orElseThrow(EmptyCartException::new);
     }
+
+    public List<Cart> getAllCartsForUser(User user) throws StripeException {
+        tryToFinalizeCart(user);
+        return cartRepository.getAllCartsForUser(user.getId());
+    }
+
+    private void tryToFinalizeCart(User user) throws StripeException {
+        Cart cart = cartRepository.getCartByUser(user.getId());
+        if (cart != null && cart.getPaymentId() != null) {
+            finalizeCart(user);
+        }
+    }
 }
