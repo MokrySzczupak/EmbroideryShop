@@ -77,6 +77,7 @@ public class CartService {
         Cart newCart = new Cart();
         newCart.setUser(user);
         newCart.setCartItems(new ArrayList<>());
+        newCart.setStatus("requires_payment_method");
         return cartRepository.save(newCart);
     }
 
@@ -95,20 +96,22 @@ public class CartService {
     @Transactional
     public void finalizeCart(User user) throws StripeException {
         Cart cart = cartRepository.getCartByUser(user.getId());
-        checkCartPayment(cart);
+        checkCartPaymentStatus(cart);
         cart.getCartItems().forEach((cartItem) -> cartItem.setSold(true));
         cart.setPaid(true);
     }
 
-    private void checkCartPayment(Cart cart) throws StripeException {
+    private void checkCartPaymentStatus(Cart cart) throws StripeException {
         Stripe.apiKey = stripeApiKey;
         PaymentIntent paymentIntent = PaymentIntent.retrieve(cart.getPaymentId());
+        cart.setStatus(paymentIntent.getStatus());
         if (!"succeeded".equals(paymentIntent.getStatus())) {
             throw new CartNotPaidException();
         }
     }
 
     public List<CartItem> getCartItemsForUser(User user) {
+        tryToFinalizeCart(user);
         Cart cart = getCartForUser(user);
         return cart.getCartItems();
     }
@@ -123,15 +126,17 @@ public class CartService {
                 .orElseThrow(EmptyCartException::new);
     }
 
-    public List<Cart> getAllCartsForUser(User user) throws StripeException {
+    public List<Cart> getAllCartsForUser(User user) {
         tryToFinalizeCart(user);
         return cartRepository.getAllCartsForUser(user.getId());
     }
 
-    private void tryToFinalizeCart(User user) throws StripeException {
+    private void tryToFinalizeCart(User user) {
         Cart cart = cartRepository.getCartByUser(user.getId());
         if (cart != null && cart.getPaymentId() != null) {
-            finalizeCart(user);
+            try {
+                finalizeCart(user);
+            } catch (Exception ignored) { }
         }
     }
 }

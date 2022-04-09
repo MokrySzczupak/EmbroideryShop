@@ -73,7 +73,7 @@ public class CartController {
     }
 
     @GetMapping("/all/user")
-    public List<Cart> getAllCartsForUser(Authentication auth) throws StripeException {
+    public List<Cart> getAllCartsForUser(Authentication auth) {
         User user = userDetailsService.loadLoggedUser(auth);
         return cartService.getAllCartsForUser(user);
     }

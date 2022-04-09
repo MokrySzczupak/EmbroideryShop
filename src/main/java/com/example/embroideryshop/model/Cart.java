@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,23 +35,38 @@ public class Cart {
 
     private String paymentId;
 
-    public void setPaymentId(String paymentId) throws StripeException {
-        if (this.paymentId == null) {
-            this.paymentId = paymentId;
-            return;
+    private String status;
+
+    @Transient
+    public double getTotalPrice() {
+        double total = 0.0;
+        for (CartItem cartItem: cartItems) {
+            total += cartItem.getSubtotal().doubleValue();
         }
-        PaymentIntent paymentMethod = PaymentIntent.retrieve(this.paymentId);
-        String status = paymentMethod.getStatus();
+        return total;
+    }
+
+    public PaymentIntent createPaymentIntent(PaymentIntentCreateParams params) throws StripeException {
+        PaymentIntent paymentIntent = PaymentIntent.create(params);
+        if (this.paymentId == null) {
+            this.status = paymentIntent.getStatus();
+            this.paymentId = paymentIntent.getId();
+            return paymentIntent;
+        }
+        PaymentIntent retrievedPayment = PaymentIntent.retrieve(this.paymentId);
+        String status = retrievedPayment.getStatus();
         switch(status) {
             case "succeeded":
             case "requires_confirmation":
             case "requires_action":
             case "processing":
             case "requires_payment_method":
-                break;
+                this.status = retrievedPayment.getStatus();
+                return retrievedPayment;
             default:
-                this.paymentId = paymentId;
-                break;
+                this.paymentId = paymentIntent.getId();
+                this.status = paymentIntent.getStatus();
+                return paymentIntent;
         }
     }
 }

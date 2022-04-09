@@ -30,8 +30,7 @@ public class PaymentService {
         Stripe.apiKey = stripeApiKey;
         Cart cart = cartService.getFilledCartForUser(user);
         PaymentIntentCreateParams params = createPaymentParams(user, cart);
-        PaymentIntent paymentIntent = PaymentIntent.create(params);
-        cart.setPaymentId(paymentIntent.getId());
+        PaymentIntent paymentIntent = cart.createPaymentIntent(params);
         return paymentIntent.getClientSecret();
     }
 
