@@ -1,5 +1,7 @@
 package com.example.embroideryshop.service;
 
+import com.example.embroideryshop.controller.dto.CartPaginationDto;
+import com.example.embroideryshop.controller.dto.ProductPaginationDto;
 import com.example.embroideryshop.exception.CartNotPaidException;
 import com.example.embroideryshop.exception.EmptyCartException;
 import com.example.embroideryshop.exception.NoSuchCartItemException;
@@ -15,6 +17,9 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -36,6 +41,8 @@ public class CartService {
     private ProductService productService;
     @Value("${Stripe.apiKey}")
     String stripeApiKey;
+
+    private final int PAGE_SIZE = 10;
 
     @Transactional
     public void addProduct(long productId, int quantity, User user) {
@@ -81,8 +88,17 @@ public class CartService {
         return cartRepository.save(newCart);
     }
 
-    public List<Cart> getAllCarts() {
-        return cartRepository.getAllCarts();
+    public CartPaginationDto getAllCarts(int pageNumber, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.valueOf(sortDirection.toUpperCase()), "id" );
+        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
+        List<Cart> carts = cartRepository.getAllCarts(pageable);
+        int totalCarts = cartRepository.countCartBy();
+        return createCartPaginationDto(carts, pageNumber, totalCarts);
+    }
+
+    private CartPaginationDto createCartPaginationDto(List<Cart> carts, int currentPage, int totalCarts) {
+        int totalPages = totalCarts / PAGE_SIZE + ((totalCarts % PAGE_SIZE == 0) ? 0 : 1);
+        return new CartPaginationDto(carts, totalCarts, totalPages, currentPage + 1);
     }
 
     public void setCartCompleted(Long id) {
