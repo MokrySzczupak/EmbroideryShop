@@ -1,6 +1,5 @@
 package com.example.embroideryshop.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -18,7 +17,7 @@ public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @JsonIgnore
+
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;

@@ -1,7 +1,6 @@
 package com.example.embroideryshop.service;
 
 import com.example.embroideryshop.controller.dto.CartPaginationDto;
-import com.example.embroideryshop.controller.dto.ProductPaginationDto;
 import com.example.embroideryshop.exception.CartNotPaidException;
 import com.example.embroideryshop.exception.EmptyCartException;
 import com.example.embroideryshop.exception.NoSuchCartItemException;
@@ -26,6 +25,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -42,7 +42,7 @@ public class CartService {
     @Value("${Stripe.apiKey}")
     String stripeApiKey;
 
-    private final int PAGE_SIZE = 10;
+    private final int PAGE_SIZE = 2;
 
     @Transactional
     public void addProduct(long productId, int quantity, User user) {
@@ -92,8 +92,24 @@ public class CartService {
         Sort sort = Sort.by(Sort.Direction.valueOf(sortDirection.toUpperCase()), "id" );
         Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
         List<Cart> carts = cartRepository.getAllCarts(pageable);
-        int totalCarts = cartRepository.countCartBy();
-        return createCartPaginationDto(carts, pageNumber, totalCarts);
+        finalizeCartsIfNeeded(carts);
+        List<Cart> finalizedCarts = removeNonFinalizedCarts(carts);
+        int totalCarts = cartRepository.countFinalizedCarts();
+        return createCartPaginationDto(finalizedCarts, pageNumber, totalCarts);
+    }
+
+    private List<Cart> removeNonFinalizedCarts(List<Cart> carts) {
+        return carts.stream()
+                .filter(cart -> !"requires_payment_method".equals(cart.getStatus()))
+                .collect(Collectors.toList());
+    }
+
+    private void finalizeCartsIfNeeded(List<Cart> carts) {
+        for (Cart cart: carts) {
+            if (!cart.isPaid() && cart.getPaymentId() != null && cart.getCartItems().size() != 0) {
+                tryToFinalizeCart(cart.getUser());
+            }
+        }
     }
 
     private CartPaginationDto createCartPaginationDto(List<Cart> carts, int currentPage, int totalCarts) {

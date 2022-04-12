@@ -27,5 +27,6 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Query("SELECT c FROM Cart c WHERE c.user.id = ?1")
     List<Cart> getAllCartsForUser(Long userId);
 
-    int countCartBy();
+    @Query("SELECT COUNT(c.id) FROM Cart c WHERE c.status NOT LIKE 'requires_payment_method'")
+    int countFinalizedCarts();
 }
