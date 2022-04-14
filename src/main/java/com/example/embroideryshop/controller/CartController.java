@@ -8,7 +8,6 @@ import com.example.embroideryshop.service.CartService;
 import com.example.embroideryshop.service.UserDetailsServiceImpl;
 import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 

@@ -17,14 +17,11 @@ public class User {
 
     @Column(nullable = false, unique = true, length = 80)
     private String email;
-    @JsonIgnore
     @Column(nullable = false, length = 50)
     private String username;
-    @JsonIgnore
     @Column(nullable = false, length = 80)
     private String password;
 
-    @JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
