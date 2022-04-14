@@ -56,25 +56,25 @@ public class ShoppingCartTest {
         user.setId(2);
         Product product = entityManager.find(Product.class, 20L);
         cartItemRepository.removeByUserAndProduct(user.getId(), product.getId());
-        CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product);
+        CartItem cartItem = cartItemRepository.findByUserAndProduct(user.getId(), product.getId());
         assertThat(cartItem).isNull();
     }
 
     @Test
     @Transactional
     public void shouldUpdateQuantity() {
-        Product product = entityManager.find(Product.class, 20L);
+        Product product = entityManager.find(Product.class, 1L);
         User user = entityManager.find(User.class, 2L);
-        cartItemRepository.updateQuantity(10, 20L, 2);
-        CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product);
+        cartItemRepository.updateQuantity(10, 1L, 2);
+        CartItem cartItem = cartItemRepository.findByUserAndProduct(user.getId(), product.getId());
         assertThat(cartItem.getQuantity()).isEqualTo(10);
     }
 
     @Test
     public void shouldGetCartItemByUserAndProduct() {
-        Product product = entityManager.find(Product.class, 20L);
+        Product product = entityManager.find(Product.class, 1L);
         User user = entityManager.find(User.class, 2L);
-        CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product);
+        CartItem cartItem = cartItemRepository.findByUserAndProduct(user.getId(), product.getId());
         assertThat(cartItem).isNotNull();
     }
 

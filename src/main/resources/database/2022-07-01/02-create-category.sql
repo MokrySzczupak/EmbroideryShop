@@ -1,9 +1,9 @@
 --liquibase formatted sql
 --changeset nwojtowicz:2
-CREATE TABLE CATEGORY (
+CREATE TABLE category (
   category_id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50) NOT NULL
 );
 
-ALTER TABLE PRODUCT
-    ADD FOREIGN KEY (category_id) REFERENCES CATEGORY(category_id);
+ALTER TABLE product
+    ADD FOREIGN KEY (category_id) REFERENCES category(category_id);

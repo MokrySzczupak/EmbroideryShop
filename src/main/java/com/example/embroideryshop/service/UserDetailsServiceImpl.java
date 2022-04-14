@@ -8,6 +8,7 @@ import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.model.UserDetailsImpl;
 import com.example.embroideryshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,6 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
+    @Cacheable(cacheNames = "UserByUsername", key = "#username")
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findUserByEmail(username);
 
@@ -62,6 +64,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return email.matches(".*[@].*[.].*");
     }
 
+    @Cacheable(cacheNames = "LoggedUser", key = "#auth")
     public User loadLoggedUser(Authentication auth) {
         if (auth == null) {
             throw new UserNotLoggedInException();

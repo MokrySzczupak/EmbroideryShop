@@ -68,6 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/cart/all").hasAnyAuthority("ADMIN")
                 .mvcMatchers("/cart/complete/**").hasAuthority("ADMIN")
                 .mvcMatchers(HttpMethod.GET, "/cart").authenticated()
+                .mvcMatchers(HttpMethod.GET, "/cart/all/user").authenticated()
                 .mvcMatchers(HttpMethod.GET, "/cart/**").hasAuthority("ADMIN")
                 .anyRequest().hasAnyAuthority("ADMIN", "USER")
                 .and()
@@ -86,7 +87,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration corsConfiguration = new CorsConfiguration().applyPermitDefaultValues();
         corsConfiguration.addExposedHeader("Authorization");
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000", "https://dzieciecyatelier.pl",
+                "https://www.dzieciecyatelier.pl"));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;

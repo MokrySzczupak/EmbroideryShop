@@ -1,6 +1,6 @@
 --liquibase formatted sql
 --changeset nwojtowicz:1
-CREATE TABLE PRODUCT (
+CREATE TABLE product (
      id BIGINT AUTO_INCREMENT PRIMARY KEY,
      name VARCHAR(100)  NOT NULL,
      description VARCHAR(2000) NULL,

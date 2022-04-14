@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import javax.transaction.Transactional;
 
 import java.io.FileInputStream;
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +58,7 @@ public class ProductControllerTest {
         Product product = new Product();
         product.setName("Poduszka spersonalizowana");
         product.setDescription("Produkt zawiera puch");
-        product.setPrice(55.0);
+        product.setPrice(BigDecimal.valueOf(55.0));
         product.setMainImageName(file.getOriginalFilename());
         MockMultipartFile jsonProduct = new MockMultipartFile("product", "",
                 "application/json", objectMapper.writeValueAsString(product).getBytes());
@@ -76,7 +77,7 @@ public class ProductControllerTest {
         assertThat(addedProduct).isNotNull();
         assertThat(addedProduct.getName()).isEqualTo("Poduszka spersonalizowana");
         assertThat(addedProduct.getDescription()).isEqualTo("Produkt zawiera puch");
-        assertThat(addedProduct.getPrice()).isEqualTo(55.0);
+        assertThat(addedProduct.getPrice()).isEqualTo(BigDecimal.valueOf(55.00));
         assertThat(addedProduct.getCategory().getName()).isEqualTo("Category 1");
         assertThat(addedProduct.getMainImageName()).isEqualTo(defaultMainFileName);
     }
@@ -87,7 +88,7 @@ public class ProductControllerTest {
         // given
         Product newProduct = new Product();
         newProduct.setName("Poduszka spersonalizowana");
-        newProduct.setPrice(55.0);
+        newProduct.setPrice(BigDecimal.valueOf(55.0));
         newProduct.setCategory(categoryRepository.findById(1L).get());
         newProduct.setMainImageName(defaultMainFileName);
         productRepository.save(newProduct);
@@ -109,7 +110,7 @@ public class ProductControllerTest {
         String testName = "spersonalizowana";
         Product newProduct = new Product();
         newProduct.setName("Poduszka " + testName);
-        newProduct.setPrice(55.0);
+        newProduct.setPrice(BigDecimal.valueOf(55.0));
         newProduct.setCategory(categoryRepository.findById(1L).get());
         newProduct.setMainImageName(defaultMainFileName);
         productRepository.save(newProduct);
@@ -195,7 +196,7 @@ public class ProductControllerTest {
         editedProduct.setId(12L);
         editedProduct.setName("testEditedProduct");
         editedProduct.setDescription("testDescription");
-        editedProduct.setPrice(29.99);
+        editedProduct.setPrice(BigDecimal.valueOf(29.99));
         editedProduct.setCategory(categoryRepository.findByName("Category 1"));
 
         MvcResult mvcResult = mockMvc.perform(put("/products/")
@@ -209,7 +210,7 @@ public class ProductControllerTest {
         Product product = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
         assertThat(product.getName()).isEqualTo("testEditedProduct");
         assertThat(product.getDescription()).isEqualTo("testDescription");
-        assertThat(product.getPrice()).isEqualTo(29.99);
+        assertThat(product.getPrice()).isEqualTo(BigDecimal.valueOf(29.99));
         assertThat(product.getCategory().getName()).isEqualTo("Category 1");
     }
 
