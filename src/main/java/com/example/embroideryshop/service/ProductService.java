@@ -12,6 +12,8 @@ import com.example.embroideryshop.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ public class ProductService {
         return productJson;
     }
 
+    @Cacheable(cacheNames = "AllProducts", key = "#pageNumber")
     public ProductPaginationDto getAllProducts(int pageNumber, SortCriteria sortCriteria) {
         List<Product> products = productRepository.findAllProducts(PageRequest.of(pageNumber, PAGE_SIZE,
                 Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString()))
@@ -62,6 +65,7 @@ public class ProductService {
         return new ProductPaginationDto(products, totalProducts, totalPages, currentPage + 1);
     }
 
+    @Cacheable(cacheNames = "ProductsWithName", key = "{#pageNumber, #name}")
     public ProductPaginationDto getProductsWithName(String name, int pageNumber, SortCriteria sortCriteria) {
         name = formatName(name);
         List<Product> products = productRepository.findAllByNameLikeIgnoreCase(name,
@@ -76,6 +80,7 @@ public class ProductService {
         return "%" + name.toLowerCase() + "%";
     }
 
+    @CacheEvict(value = {"AllProducts", "ProductById", "ProductsWithCategory", "ProductsWithName"}, allEntries = true)
     public Product addProduct(Product product, String category, MultipartFile multipartFile) throws IOException {
         setProperProductCategory(product, category);
 
@@ -110,6 +115,7 @@ public class ProductService {
         }
     }
 
+    @Cacheable(cacheNames = "ProductById", key = "#id")
     public Product getProductById(long id) {
         Product product = productRepository.findById(id).orElse(null);
         if (product == null) {
@@ -118,6 +124,7 @@ public class ProductService {
         return product;
     }
 
+    @CacheEvict(value = "AllCategories", allEntries = true)
     public Category addCategory(Category category) {
         if (categoryExists(category)) throw new CategoryAlreadyExistsException(category.getName());
         return categoryRepository.save(category);
@@ -128,10 +135,12 @@ public class ProductService {
         return categoryFromRepo != null;
     }
 
+    @Cacheable(cacheNames = "AllCategories")
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
+    @Cacheable(cacheNames = "ProductsWithCategory", key = "{#name, #pageNumber}")
     public ProductPaginationDto getProductsWithCategory(String name, int pageNumber, SortCriteria sortCriteria) {
         Category category = categoryRepository.findByNameIgnoreCase(name);
         if (category == null) {
@@ -146,11 +155,13 @@ public class ProductService {
         return createProductPaginationDto(products, pageNumber, totalProducts);
     }
 
+    @CacheEvict(value = {"AllProducts", "ProductById", "ProductsWithCategory", "ProductsWithName"}, allEntries = true)
     public void deleteProduct(long id) {
         productRepository.deleteById(id);
     }
 
     @Transactional
+    @CacheEvict(value = {"AllProducts", "ProductById", "ProductsWithCategory", "ProductsWithName"}, allEntries = true)
     public Product editProduct(Product product) {
         Product productEdited = productRepository.findById(product.getId()).orElseThrow();
         productEdited.setName(product.getName());
@@ -162,6 +173,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "AllCategories", allEntries = true)
     public Category editCategory(Category category) {
         if (categoryExists(category)) {
             throw new CategoryAlreadyExistsException(category.getName());
@@ -171,6 +183,7 @@ public class ProductService {
         return categoryEdited;
     }
 
+    @CacheEvict(value = "AllCategories", allEntries = true)
     public void deleteCategory(long id) {
         if (productWithCategoryExists(id)) {
             throw new CategoryInUseException();
@@ -180,9 +193,6 @@ public class ProductService {
 
     private boolean productWithCategoryExists(long id) {
         List<Product> productsWithCategory = productRepository.findAllByCategory_CategoryId(id, PageRequest.of(1, PAGE_SIZE));
-        if (!productsWithCategory.isEmpty()) {
-            return true;
-        }
-        return false;
+        return !productsWithCategory.isEmpty();
     }
 }
