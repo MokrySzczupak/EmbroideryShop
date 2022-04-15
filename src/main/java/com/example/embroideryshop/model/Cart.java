@@ -68,4 +68,11 @@ public class Cart {
                 return paymentIntent;
         }
     }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+        if (paid) {
+            cartItems.forEach((cartItem) -> cartItem.setSold(true));
+        }
+    }
 }

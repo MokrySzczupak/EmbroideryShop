@@ -46,12 +46,13 @@ public class CartService {
     private final int PAGE_SIZE = 2;
 
     @Transactional
-    public void addProduct(long productId, int quantity, User user) {
+    public void addProduct(long productId, int quantity, User user) throws StripeException {
         if (quantity <= 0) {
             throw new WrongQuantityException();
         }
         Cart cart = Optional.ofNullable(cartRepository.getCartByUser(user.getId()))
                 .orElseGet(() -> createCartForUser(user));
+        checkIfCartFinalized(cart);
         Product product = productService.getProductById(productId);
         CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user.getId(), productId))
                 .orElseGet(() -> {
@@ -65,19 +66,36 @@ public class CartService {
         cartItem.setQuantity(quantity);
     }
 
+    private void checkIfCartFinalized(Cart cart) throws StripeException {
+        if (cart.getPaymentId() == null) return;
+        Stripe.apiKey = stripeApiKey;
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(cart.getPaymentId());
+        cart.setStatus(paymentIntent.getStatus());
+        if ("succeeded".equals(paymentIntent.getStatus())) {
+            cart.setPaid(true);
+        }
+        if (!"requires_payment_method".equals(paymentIntent.getStatus())) {
+            cart = createCartForUser(cart.getUser());
+        }
+    }
+
     @Transactional
-    public void updateQuantity(long productId, int quantity, long userId) {
+    public void updateQuantity(long productId, int quantity, long userId) throws StripeException {
         if (quantity <= 0) {
             removeProduct(userId, productId);
             return;
         }
         CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(userId, productId))
                 .orElseThrow(NoSuchCartItemException::new);
+        checkIfCartFinalized(cartItem.getCart());
         cartItem.setQuantity(quantity);
 
     }
 
-    public void removeProduct(long userId, long productId) {
+    public void removeProduct(long userId, long productId) throws StripeException {
+        CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(userId, productId))
+                .orElseThrow(NoSuchCartItemException::new);
+        checkIfCartFinalized(cartItem.getCart());
         cartItemRepository.removeByUserAndProduct(userId, productId);
     }
 
@@ -130,7 +148,6 @@ public class CartService {
     public void finalizeCart(User user) throws StripeException {
         Cart cart = cartRepository.getCartByUser(user.getId());
         checkCartPaymentStatus(cart);
-        cart.getCartItems().forEach((cartItem) -> cartItem.setSold(true));
         cart.setPaid(true);
     }
 

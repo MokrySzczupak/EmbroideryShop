@@ -32,7 +32,7 @@ public class CartController {
     @PostMapping("/add/{pid}/{qty}")
     public void addProductToCart(@PathVariable("pid") Long productId,
                                    @PathVariable("qty") Integer quantity,
-                                   Authentication auth) {
+                                   Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
         cartService.addProduct(productId, quantity, user);
     }
@@ -40,14 +40,14 @@ public class CartController {
     @PutMapping("/update/{pid}/{qty}")
     public void updateQuantity(@PathVariable("pid") Long productId,
                                  @PathVariable("qty") Integer quantity,
-                                 Authentication auth) {
+                                 Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
         cartService.updateQuantity(productId, quantity, user.getId());
     }
 
     @DeleteMapping("/remove/{pid}")
     public void removeProductFromCart(@PathVariable("pid") Long productId,
-                                 Authentication auth) {
+                                 Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
         cartService.removeProduct(user.getId(), productId);
     }
