@@ -16,7 +16,6 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -75,6 +74,7 @@ public class CartService {
             cart.setPaid(true);
         }
         if (!"requires_payment_method".equals(paymentIntent.getStatus())) {
+            cart.setCartItemsAsSold();
             cart = createCartForUser(cart.getUser());
         }
     }
@@ -155,6 +155,9 @@ public class CartService {
         Stripe.apiKey = stripeApiKey;
         PaymentIntent paymentIntent = PaymentIntent.retrieve(cart.getPaymentId());
         cart.setStatus(paymentIntent.getStatus());
+        if (!"requires_payment_method".equals(paymentIntent.getStatus())) {
+            cart.setCartItemsAsSold();
+        }
         if (!"succeeded".equals(paymentIntent.getStatus())) {
             throw new CartNotPaidException();
         }
