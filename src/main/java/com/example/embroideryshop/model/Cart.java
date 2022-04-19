@@ -1,5 +1,6 @@
 package com.example.embroideryshop.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -8,6 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Entity
@@ -35,6 +38,8 @@ public class Cart {
     private String paymentId;
 
     private String status;
+    @JsonIgnore
+    private final int SHIPPING_PRICE = 15;
 
     @Transient
     public double getTotalPrice() {
@@ -46,6 +51,12 @@ public class Cart {
     }
 
     public PaymentIntent createPaymentIntent(PaymentIntentCreateParams params) throws StripeException {
+        if (paymentId != null) {
+            PaymentIntent retrievedPayment = PaymentIntent.retrieve(paymentId);
+            retrievedPayment.cancel();
+            setStatus("canceled");
+            setCartItemsAsSold();
+        }
         PaymentIntent paymentIntent = PaymentIntent.create(params);
         setStatusAndPaymentId(paymentIntent.getStatus(), paymentIntent.getId());
         return paymentIntent;
@@ -65,5 +76,15 @@ public class Cart {
 
     public void setCartItemsAsSold() {
         cartItems.forEach((cartItem) -> cartItem.setSold(true));
+    }
+
+    public long calculateCartItemsPrice() {
+        BigDecimal price = BigDecimal.valueOf(SHIPPING_PRICE);
+        for (CartItem cartItem: cartItems) {
+            price = price.add(cartItem.getSubtotal());
+        }
+        price = price.setScale(2, RoundingMode.HALF_UP);
+        String priceStr = price.toPlainString().replaceAll("\\.", "");
+        return Long.parseLong(priceStr);
     }
 }
