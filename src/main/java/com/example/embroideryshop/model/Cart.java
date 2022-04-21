@@ -54,8 +54,6 @@ public class Cart {
         if (paymentId != null) {
             PaymentIntent retrievedPayment = PaymentIntent.retrieve(paymentId);
             retrievedPayment.cancel();
-            setStatus("canceled");
-            setCartItemsAsSold();
         }
         PaymentIntent paymentIntent = PaymentIntent.create(params);
         setStatusAndPaymentId(paymentIntent.getStatus(), paymentIntent.getId());

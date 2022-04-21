@@ -50,8 +50,7 @@ public class CartService {
             throw new WrongQuantityException();
         }
         updateStatusAndTryToFinalize(user);
-        Cart cart = Optional.ofNullable(cartRepository.getCartByUser(user.getId()))
-                .orElseGet(() -> createCartForUser(user));
+        Cart cart = getCartForUser(user);
         Product product = productService.getProductById(productId);
         CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user.getId(), productId))
                 .orElseGet(() -> {
@@ -63,6 +62,7 @@ public class CartService {
                 });
         quantity = cartItem.getQuantity() + quantity;
         cartItem.setQuantity(quantity);
+        cart.getCartItems().add(cartItem);
         updatePaymentAmount(cart);
     }
 
@@ -92,6 +92,7 @@ public class CartService {
         CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user.getId(), productId))
                 .orElseThrow(NoSuchCartItemException::new);
         cartItemRepository.removeByUserAndProduct(user.getId(), productId);
+        cartItem.getCart().getCartItems().remove(cartItem);
         updatePaymentAmount(cartItem.getCart());
     }
 
@@ -143,7 +144,7 @@ public class CartService {
     @Transactional
     public void updateStatusAndTryToFinalize(User user) throws StripeException {
         Cart cart = cartRepository.getCartByUser(user.getId());
-        if (cart.getPaymentId() == null) return;
+        if (cart == null || cart.getPaymentId() == null) return;
 
         Stripe.apiKey = stripeApiKey;
         PaymentIntent paymentIntent = PaymentIntent.retrieve(cart.getPaymentId());
