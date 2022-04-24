@@ -62,7 +62,6 @@ public class CartService {
                 });
         quantity = cartItem.getQuantity() + quantity;
         cartItem.setQuantity(quantity);
-        cart.getCartItems().add(cartItem);
         updatePaymentAmount(cart);
     }
 
@@ -92,7 +91,6 @@ public class CartService {
         CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user.getId(), productId))
                 .orElseThrow(NoSuchCartItemException::new);
         cartItemRepository.removeByUserAndProduct(user.getId(), productId);
-        cartItem.getCart().getCartItems().remove(cartItem);
         updatePaymentAmount(cartItem.getCart());
     }
 

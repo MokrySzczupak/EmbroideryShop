@@ -5,13 +5,16 @@ import com.example.embroideryshop.exception.CategoryAlreadyExistsException;
 import com.example.embroideryshop.exception.CategoryInUseException;
 import com.example.embroideryshop.model.Category;
 import com.example.embroideryshop.model.Product;
+import com.example.embroideryshop.repository.CartItemRepository;
 import com.example.embroideryshop.repository.CategoryRepository;
 import com.example.embroideryshop.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -19,20 +22,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
-import javax.transaction.Transactional;
-
 import java.io.FileInputStream;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static com.example.embroideryshop.TestsHelperMethods.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/***
- * Test database records are inserted by liquibase
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @WithMockUser(username = "admin@gmail.com", password = "test", authorities = "ADMIN")
@@ -46,24 +44,29 @@ public class ProductControllerTest {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
+    private CartItemRepository cartItemRepository;
+    @Autowired
     private CategoryRepository categoryRepository;
-    private final String defaultMainFileName = "java-logo.png";
+
+    @BeforeEach
+    public void cleanTestData() {
+        cartItemRepository.deleteAll();
+        productRepository.deleteAll();
+        categoryRepository.deleteAll();
+    }
 
     @Test
-    @Transactional
     public void shouldAddProduct() throws Exception {
         // given
-        FileInputStream fis = new FileInputStream("./src/test/resources/" + defaultMainFileName);
-        MockMultipartFile file = new MockMultipartFile("multipartFile", defaultMainFileName, "multipart/form-data", fis);
-        Product product = new Product();
-        product.setName("Poduszka spersonalizowana");
-        product.setDescription("Produkt zawiera puch");
-        product.setPrice(BigDecimal.valueOf(55.0));
+        MockMultipartFile file = createTestMultipartImageFile();
+        Product product = createTestProduct();
         product.setMainImageName(file.getOriginalFilename());
+        Category category = createTestCategory();
+        categoryRepository.save(category);
         MockMultipartFile jsonProduct = new MockMultipartFile("product", "",
                 "application/json", objectMapper.writeValueAsString(product).getBytes());
         MockMultipartFile jsonCategory = new MockMultipartFile("category", "",
-                "application/json", "Category 1".getBytes());
+                "application/json", TEST_CATEGORY_NAME.getBytes());
         // when
         MvcResult mvcResult = mockMvc.perform(multipart("/products/")
                         .file(file)
@@ -78,19 +81,23 @@ public class ProductControllerTest {
         assertThat(addedProduct.getName()).isEqualTo("Poduszka spersonalizowana");
         assertThat(addedProduct.getDescription()).isEqualTo("Produkt zawiera puch");
         assertThat(addedProduct.getPrice()).isEqualTo(BigDecimal.valueOf(55.00));
-        assertThat(addedProduct.getCategory().getName()).isEqualTo("Category 1");
-        assertThat(addedProduct.getMainImageName()).isEqualTo(defaultMainFileName);
+        assertThat(addedProduct.getCategory().getName()).isEqualTo(TEST_CATEGORY_NAME);
+        assertThat(addedProduct.getMainImageName()).isEqualTo(TEST_FILE_NAME);
     }
 
+    private MockMultipartFile createTestMultipartImageFile() throws Exception {
+        FileInputStream fis = new FileInputStream("./src/test/resources/" + TEST_FILE_NAME);
+        return new MockMultipartFile("multipartFile", TEST_FILE_NAME, "multipart/form-data", fis);
+    }
+
+
     @Test
-    @Transactional
     public void shouldGetSingleProductById() throws Exception {
         // given
-        Product newProduct = new Product();
-        newProduct.setName("Poduszka spersonalizowana");
-        newProduct.setPrice(BigDecimal.valueOf(55.0));
-        newProduct.setCategory(categoryRepository.findById(1L).get());
-        newProduct.setMainImageName(defaultMainFileName);
+        Product newProduct = createTestProduct();
+        Category category = createTestCategory();
+        categoryRepository.save(category);
+        newProduct.setCategory(category);
         productRepository.save(newProduct);
         // when
         MvcResult mvcResult = mockMvc.perform(get("/products/" + newProduct.getId()))
@@ -104,100 +111,123 @@ public class ProductControllerTest {
     }
 
     @Test
-    @Transactional
     public void shouldGetProductsByName() throws Exception {
         // given
-        String testName = "spersonalizowana";
-        Product newProduct = new Product();
-        newProduct.setName("Poduszka " + testName);
-        newProduct.setPrice(BigDecimal.valueOf(55.0));
-        newProduct.setCategory(categoryRepository.findById(1L).get());
-        newProduct.setMainImageName(defaultMainFileName);
+        Product newProduct = createTestProduct();
+        Category category = createTestCategory();
+        categoryRepository.save(category);
+        newProduct.setCategory(category);
         productRepository.save(newProduct);
         // when
-        MvcResult mvcResult = mockMvc.perform(get("/products/search/" + testName))
+        MvcResult mvcResult = mockMvc.perform(get("/products/search/" + TEST_PRODUCT_NAME))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
         // then
         List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ProductPaginationDto.class).getProducts();
         for (Product product: products) {
-            assertThat(product.getName()).contains("spersonalizowana");
+            assertThat(product.getName()).contains(TEST_PRODUCT_NAME);
         }
     }
 
     @Test
-    @Transactional
     public void shouldAddCategory() throws Exception {
-        Category newCategory = new Category();
-        newCategory.setName("testCategory");
-
+        // given
+        Category newCategory = createTestCategory();
+        // when
         MvcResult mvcResult = mockMvc.perform(post("/products/category")
                         .content(objectMapper.writeValueAsString(newCategory))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
-
+        // then
         Category category = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Category.class);
         assertThat(category).isNotNull();
-        assertThat(category.getName()).isEqualTo(newCategory.getName());
+        assertThat(category.getName()).isEqualTo(TEST_CATEGORY_NAME);
     }
 
     @Test
-    @Transactional
     public void shouldThrowCategoryAlreadyExistsException() throws Exception {
-        String categoryName = "testCategory";
-        Category newCategory = new Category();
-        newCategory.setName(categoryName);
-        Category newCategoryDuplicate = new Category();
-        newCategoryDuplicate.setName(categoryName);
+        // given
+        Category newCategory = createTestCategory();
         categoryRepository.save(newCategory);
-
-        mockMvc.perform(post("/products/category")
+        Category newCategoryDuplicate = createTestCategory();
+        // when
+        MvcResult result = mockMvc.perform(post("/products/category")
                         .content(objectMapper.writeValueAsString(newCategoryDuplicate))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isConflict())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof CategoryAlreadyExistsException))
-                .andExpect(result -> assertThat(result.getResolvedException().getMessage()).contains("Kategoria '" + newCategoryDuplicate.getName() + "' już istnieje"));
+                .andReturn();
+        // then
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
+        assertThat(result.getResolvedException()).isInstanceOf(CategoryAlreadyExistsException.class);
+        assertThat(result.getResolvedException())
+                .hasMessageContaining(String.format("Kategoria '%s' już istnieje", newCategoryDuplicate.getName()));
     }
 
     @Test
-    @Transactional
     public void shouldGetProductsByCategory() throws Exception {
-        String categoryName = "Category 1";
-
-        MvcResult mvcResult = mockMvc.perform(get("/products/category/" + categoryName))
+        //given
+        Product testProductOne = createTestProduct();
+        Product testProductTwo = createTestProduct();
+        Category category = createTestCategory();
+        categoryRepository.save(category);
+        testProductOne.setCategory(category);
+        testProductTwo.setCategory(category);
+        productRepository.saveAll(List.of(testProductOne, testProductTwo));
+        // when
+        MvcResult mvcResult = mockMvc.perform(get("/products/category/" + TEST_CATEGORY_NAME))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
-
-        List<Product> products = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ProductPaginationDto.class).getProducts();
-        for (Product product: products) {
-            assertThat(product.getCategory().getName()).isEqualTo(categoryName);
+        // then
+        List<Product> products = objectMapper
+                .readValue(mvcResult.getResponse().getContentAsString(), ProductPaginationDto.class)
+                .getProducts();
+        assertThat(products).hasSize(2);
+        for (Product p: products) {
+            assertThat(p.getCategory().getName()).isEqualTo(TEST_CATEGORY_NAME);
         }
     }
 
     @Test
-    @Transactional
     public void shouldDeleteProduct() throws Exception {
-        long productId = 15;
-        mockMvc.perform(delete("/products/" + productId)
+        // given
+        Product productToDelete = createTestProduct();
+        Category category = createTestCategory();
+        categoryRepository.save(category);
+        productToDelete.setCategory(category);
+        productRepository.save(productToDelete);
+        // when
+        MvcResult result = mockMvc.perform(delete("/products/" + productToDelete.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk());
+                .andReturn();
+        // then
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
-    @Transactional
     public void shouldEditProduct() throws Exception {
+        // given
+        Product product = createTestProduct();
+        Category category = createTestCategory();
+        categoryRepository.save(category);
+        product.setCategory(category);
+        productRepository.save(product);
+        // when
+        Category newCategory = createTestCategory();
+        newCategory.setName("newCategory");
+        categoryRepository.save(newCategory);
+
         Product editedProduct = new Product();
-        editedProduct.setId(12L);
+        editedProduct.setId(product.getId());
         editedProduct.setName("testEditedProduct");
         editedProduct.setDescription("testDescription");
+        editedProduct.setMainImageName(TEST_FILE_NAME);
         editedProduct.setPrice(BigDecimal.valueOf(29.99));
-        editedProduct.setCategory(categoryRepository.findByName("Category 1"));
+        editedProduct.setCategory(newCategory);
 
         MvcResult mvcResult = mockMvc.perform(put("/products/")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -206,19 +236,22 @@ public class ProductControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
-
-        Product product = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
-        assertThat(product.getName()).isEqualTo("testEditedProduct");
-        assertThat(product.getDescription()).isEqualTo("testDescription");
-        assertThat(product.getPrice()).isEqualTo(BigDecimal.valueOf(29.99));
-        assertThat(product.getCategory().getName()).isEqualTo("Category 1");
+        // then
+        Product editedProductResult = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
+        assertThat(editedProductResult.getName()).isEqualTo("testEditedProduct");
+        assertThat(editedProductResult.getDescription()).isEqualTo("testDescription");
+        assertThat(editedProductResult.getPrice()).isEqualTo(BigDecimal.valueOf(29.99));
+        assertThat(editedProductResult.getCategory().getName()).isEqualTo("newCategory");
     }
 
     @Test
-    @Transactional
     public void shouldEditCategory() throws Exception {
+        // given
+        Category categoryToEdit = createTestCategory();
+        categoryRepository.save(categoryToEdit);
+        // when
         Category editedCategory = new Category();
-        editedCategory.setCategoryId(1);
+        editedCategory.setCategoryId(categoryToEdit.getCategoryId());
         editedCategory.setName("testEditedCategory");
 
         MvcResult mvcResult = mockMvc.perform(put("/products/category")
@@ -228,31 +261,45 @@ public class ProductControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
-
+        // then
         Category category = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Category.class);
         assertThat(category.getName()).isEqualTo("testEditedCategory");
     }
 
     @Test
-    @Transactional
     public void shouldDeleteCategory() throws Exception {
-        long categoryId = 7;
-        mockMvc.perform(delete("/products/category/" + categoryId)
+        // given
+        Category categoryToDelete = createTestCategory();
+        categoryRepository.save(categoryToDelete);
+        // when
+        MvcResult result = mockMvc.perform(delete("/products/category/" + categoryToDelete.getCategoryId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk());
+                .andReturn();
+        // then
+        Category deletedCategory = categoryRepository.findByName(TEST_CATEGORY_NAME);
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(deletedCategory).isNull();
     }
 
     @Test
     public void shouldThrowCategoryInUseException() throws Exception {
-        long categoryId = 1;
-        mockMvc.perform(delete("/products/category/" + categoryId)
+        // given
+        Product product = createTestProduct();
+        Category categoryInUse = createTestCategory();
+        categoryRepository.save(categoryInUse);
+        product.setCategory(categoryInUse);
+        productRepository.save(product);
+        // when
+        MvcResult result = mockMvc.perform(delete("/products/category/" + categoryInUse.getCategoryId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isForbidden())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof CategoryInUseException));
+                .andReturn();
+        // then
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(result.getResolvedException()).isInstanceOf(CategoryInUseException.class);
     }
 
 }
