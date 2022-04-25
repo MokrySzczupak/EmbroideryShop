@@ -12,6 +12,8 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAllByNameLikeIgnoreCase(String name, Pageable pageable);
     List<Product> findAllByCategory_CategoryId(long id, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.category.categoryId=?1")
+    List<Product> getProductsWithCategoryId(long categoryId);
     @Query("SELECT p FROM Product p")
     List<Product> findAllProducts(Pageable pageable);
     int countProductBy();

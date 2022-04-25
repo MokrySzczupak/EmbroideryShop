@@ -1,7 +1,6 @@
 package com.example.embroideryshop.service;
 
 import com.example.embroideryshop.controller.dto.CartPaginationDto;
-import com.example.embroideryshop.exception.CartNotPaidException;
 import com.example.embroideryshop.exception.EmptyCartException;
 import com.example.embroideryshop.exception.NoSuchCartItemException;
 import com.example.embroideryshop.exception.WrongQuantityException;
@@ -16,7 +15,6 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,6 +23,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,12 +45,12 @@ public class CartService {
     private final int PAGE_SIZE = 2;
 
     @Transactional
-    public void addProduct(long productId, int quantity, User user) {
+    public void addProduct(long productId, int quantity, User user) throws StripeException {
         if (quantity <= 0) {
             throw new WrongQuantityException();
         }
-        Cart cart = Optional.ofNullable(cartRepository.getCartByUser(user.getId()))
-                .orElseGet(() -> createCartForUser(user));
+        updateStatusAndTryToFinalize(user);
+        Cart cart = getCartForUser(user);
         Product product = productService.getProductById(productId);
         CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user.getId(), productId))
                 .orElseGet(() -> {
@@ -63,22 +62,36 @@ public class CartService {
                 });
         quantity = cartItem.getQuantity() + quantity;
         cartItem.setQuantity(quantity);
+        updatePaymentAmount(cart);
+    }
+
+    private void updatePaymentAmount(Cart cart) throws StripeException {
+        if (cart.getPaymentId() == null) return;
+        Stripe.apiKey = stripeApiKey;
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(cart.getPaymentId());
+        long price = cart.calculateCartItemsPrice();
+        paymentIntent.update(Map.of("amount", price));
     }
 
     @Transactional
-    public void updateQuantity(long productId, int quantity, long userId) {
+    public void updateQuantity(long productId, int quantity, User user) throws StripeException {
         if (quantity <= 0) {
-            removeProduct(userId, productId);
+            removeProduct(user, productId);
             return;
         }
-        CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(userId, productId))
+        updateStatusAndTryToFinalize(user);
+        CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user.getId(), productId))
                 .orElseThrow(NoSuchCartItemException::new);
         cartItem.setQuantity(quantity);
-
+        updatePaymentAmount(cartItem.getCart());
     }
 
-    public void removeProduct(long userId, long productId) {
-        cartItemRepository.removeByUserAndProduct(userId, productId);
+    public void removeProduct(User user, long productId) throws StripeException {
+        updateStatusAndTryToFinalize(user);
+        CartItem cartItem = Optional.ofNullable(cartItemRepository.findByUserAndProduct(user.getId(), productId))
+                .orElseThrow(NoSuchCartItemException::new);
+        cartItemRepository.removeByUserAndProduct(user.getId(), productId);
+        updatePaymentAmount(cartItem.getCart());
     }
 
     public Cart createCartForUser(User user) {
@@ -89,26 +102,26 @@ public class CartService {
         return cartRepository.save(newCart);
     }
 
-    public CartPaginationDto getAllCarts(int pageNumber, String sortDirection) {
+    public CartPaginationDto getAllCarts(int pageNumber, String sortDirection) throws StripeException {
         Sort sort = Sort.by(Sort.Direction.valueOf(sortDirection.toUpperCase()), "id" );
         Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
         List<Cart> carts = cartRepository.getAllCarts(pageable);
         finalizeCartsIfNeeded(carts);
-        List<Cart> finalizedCarts = removeNonFinalizedCarts(carts);
+        List<Cart> finalizedCarts = getFinalizedCarts(carts);
         int totalCarts = cartRepository.countFinalizedCarts();
         return createCartPaginationDto(finalizedCarts, pageNumber, totalCarts);
     }
 
-    private List<Cart> removeNonFinalizedCarts(List<Cart> carts) {
+    private List<Cart> getFinalizedCarts(List<Cart> carts) {
         return carts.stream()
                 .filter(cart -> !"requires_payment_method".equals(cart.getStatus()))
                 .collect(Collectors.toList());
     }
 
-    private void finalizeCartsIfNeeded(List<Cart> carts) {
+    private void finalizeCartsIfNeeded(List<Cart> carts) throws StripeException {
         for (Cart cart: carts) {
             if (!cart.isPaid() && cart.getPaymentId() != null && cart.getCartItems().size() != 0) {
-                tryToFinalizeCart(cart.getUser());
+                updateStatusAndTryToFinalize(cart.getUser());
             }
         }
     }
@@ -127,24 +140,27 @@ public class CartService {
     }
 
     @Transactional
-    public void finalizeCart(User user) throws StripeException {
+    public void updateStatusAndTryToFinalize(User user) throws StripeException {
         Cart cart = cartRepository.getCartByUser(user.getId());
-        checkCartPaymentStatus(cart);
-        cart.getCartItems().forEach((cartItem) -> cartItem.setSold(true));
-        cart.setPaid(true);
-    }
+        if (cart == null || cart.getPaymentId() == null) return;
 
-    private void checkCartPaymentStatus(Cart cart) throws StripeException {
         Stripe.apiKey = stripeApiKey;
         PaymentIntent paymentIntent = PaymentIntent.retrieve(cart.getPaymentId());
         cart.setStatus(paymentIntent.getStatus());
-        if (!"succeeded".equals(paymentIntent.getStatus())) {
-            throw new CartNotPaidException();
+        manageCartWithPaymentIntent(cart, paymentIntent);
+    }
+
+    private void manageCartWithPaymentIntent(Cart cart, PaymentIntent paymentIntent) {
+        if (!"requires_payment_method".equals(paymentIntent.getStatus())) {
+            cart.setCartItemsAsSold();
+        }
+        if ("succeeded".equals(paymentIntent.getStatus())) {
+            cart.setPaid(true);
         }
     }
 
-    public List<CartItem> getCartItemsForUser(User user) {
-        tryToFinalizeCart(user);
+    public List<CartItem> getCartItemsForUser(User user) throws StripeException {
+        updateStatusAndTryToFinalize(user);
         Cart cart = getCartForUser(user);
         return cart.getCartItems();
     }
@@ -159,17 +175,8 @@ public class CartService {
                 .orElseThrow(EmptyCartException::new);
     }
 
-    public List<Cart> getAllCartsForUser(User user) {
-        tryToFinalizeCart(user);
+    public List<Cart> getAllCartsForUser(User user) throws StripeException {
+        updateStatusAndTryToFinalize(user);
         return cartRepository.getAllCartsForUser(user.getId());
-    }
-
-    private void tryToFinalizeCart(User user) {
-        Cart cart = cartRepository.getCartByUser(user.getId());
-        if (cart != null && cart.getPaymentId() != null) {
-            try {
-                finalizeCart(user);
-            } catch (Exception ignored) { }
-        }
     }
 }

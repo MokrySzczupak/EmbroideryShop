@@ -24,7 +24,7 @@ public class CartController {
     private UserDetailsServiceImpl userDetailsService;
 
     @GetMapping("")
-    public List<CartItem> showCart(Authentication auth) {
+    public List<CartItem> showCart(Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
         return cartService.getCartItemsForUser(user);
     }
@@ -32,7 +32,7 @@ public class CartController {
     @PostMapping("/add/{pid}/{qty}")
     public void addProductToCart(@PathVariable("pid") Long productId,
                                    @PathVariable("qty") Integer quantity,
-                                   Authentication auth) {
+                                   Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
         cartService.addProduct(productId, quantity, user);
     }
@@ -40,22 +40,22 @@ public class CartController {
     @PutMapping("/update/{pid}/{qty}")
     public void updateQuantity(@PathVariable("pid") Long productId,
                                  @PathVariable("qty") Integer quantity,
-                                 Authentication auth) {
+                                 Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
-        cartService.updateQuantity(productId, quantity, user.getId());
+        cartService.updateQuantity(productId, quantity, user);
     }
 
     @DeleteMapping("/remove/{pid}")
     public void removeProductFromCart(@PathVariable("pid") Long productId,
-                                 Authentication auth) {
+                                 Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
-        cartService.removeProduct(user.getId(), productId);
+        cartService.removeProduct(user, productId);
     }
 
     @PostMapping("/finalize")
     public void finalizeCart(Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
-        cartService.finalizeCart(user);
+        cartService.updateStatusAndTryToFinalize(user);
     }
 
     @PostMapping("/complete/{id}")
@@ -65,7 +65,7 @@ public class CartController {
 
     @GetMapping("all")
     public CartPaginationDto getAllCarts(@RequestParam(required = false) Integer page,
-                                         @RequestParam(required = false) String sort) {
+                                         @RequestParam(required = false) String sort) throws StripeException {
         int pageNumber = page != null && page >= 0 ? page : 0;
         String sortDirection = ("asc".equalsIgnoreCase(sort) || "desc".equalsIgnoreCase(sort)) ? sort : "desc";
         return cartService.getAllCarts(pageNumber, sortDirection);
@@ -77,7 +77,7 @@ public class CartController {
     }
 
     @GetMapping("/all/user")
-    public List<Cart> getAllCartsForUser(Authentication auth) {
+    public List<Cart> getAllCartsForUser(Authentication auth) throws StripeException {
         User user = userDetailsService.loadLoggedUser(auth);
         return cartService.getAllCartsForUser(user);
     }
