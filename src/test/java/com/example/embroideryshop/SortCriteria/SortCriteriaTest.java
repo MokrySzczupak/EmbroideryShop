@@ -22,7 +22,8 @@ public class SortCriteriaTest {
         assertEquals(ProductProperty.NAME, sortCriteria.getProperty());
     }
 
-    @Test void sortByPriceDescending() {
+    @Test
+    public void sortByPriceDescending() {
         SortCriteria sortCriteria = SortCriteria.fromQuery("desc-price");
         assertEquals(Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString()),
                 Sort.by(Sort.Direction.DESC, ProductProperty.PRICE.toString()));

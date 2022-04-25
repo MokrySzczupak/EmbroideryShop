@@ -191,8 +191,8 @@ public class ProductService {
         categoryRepository.deleteById(id);
     }
 
-    private boolean productWithCategoryExists(long id) {
-        List<Product> productsWithCategory = productRepository.findAllByCategory_CategoryId(id, PageRequest.of(1, PAGE_SIZE));
+    private boolean productWithCategoryExists(long categoryId) {
+        List<Product> productsWithCategory = productRepository.getProductsWithCategoryId(categoryId);
         return !productsWithCategory.isEmpty();
     }
 }

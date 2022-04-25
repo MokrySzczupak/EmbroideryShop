@@ -1,4 +1,4 @@
-package com.example.embroideryshop.controller.dto;
+package com.example.embroideryshop.controller;
 
 import com.example.embroideryshop.model.User;
 import com.example.embroideryshop.service.PaymentService;
