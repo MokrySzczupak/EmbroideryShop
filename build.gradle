@@ -1,3 +1,11 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.google.cloud.tools:appengine-gradle-plugin:2.2.0")
+    }
+}
 plugins {
     id 'org.springframework.boot' version '2.6.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -5,6 +13,10 @@ plugins {
     id 'war'
 }
 
+apply plugin: 'com.google.cloud.tools.appengine'
+
+appengine.deploy.projectId='grounded-web-348410'
+appengine.deploy.version='1'
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
@@ -21,6 +33,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'org.liquibase:liquibase-core'
     implementation 'com.auth0:java-jwt:3.18.2'
+    // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-dependencies
+    implementation 'org.springframework.cloud:spring-cloud-gcp-dependencies:1.2.2.RELEASE'
+    implementation 'com.google.appengine:appengine-api-1.0-sdk:+'
+    implementation 'org.springframework.boot:spring-boot-gradle-plugin:2.6.2'
+    implementation 'com.google.cloud.tools:appengine-gradle-plugin:1.3.3'
+
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'mysql:mysql-connector-java'
@@ -55,3 +73,4 @@ task generateProducts() {
         }
     }
 }
+
