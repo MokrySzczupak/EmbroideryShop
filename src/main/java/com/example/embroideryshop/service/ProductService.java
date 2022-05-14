@@ -51,7 +51,7 @@ public class ProductService {
         return productJson;
     }
 
-    @Cacheable(cacheNames = "AllProducts", key = "#pageNumber")
+    @Cacheable(cacheNames = "AllProducts", key = "{#pageNumber, #sortCriteria}")
     public ProductPaginationDto getAllProducts(int pageNumber, SortCriteria sortCriteria) {
         List<Product> products = productRepository.findAllProducts(PageRequest.of(pageNumber, PAGE_SIZE,
                 Sort.by(sortCriteria.getDirection(), sortCriteria.getProperty().toString()))
@@ -65,7 +65,7 @@ public class ProductService {
         return new ProductPaginationDto(products, totalProducts, totalPages, currentPage + 1);
     }
 
-    @Cacheable(cacheNames = "ProductsWithName", key = "{#pageNumber, #name}")
+    @Cacheable(cacheNames = "ProductsWithName", key = "{#pageNumber, #name, #sortCriteria}")
     public ProductPaginationDto getProductsWithName(String name, int pageNumber, SortCriteria sortCriteria) {
         name = formatName(name);
         List<Product> products = productRepository.findAllByNameLikeIgnoreCase(name,
@@ -140,7 +140,7 @@ public class ProductService {
         return categoryRepository.findAll();
     }
 
-    @Cacheable(cacheNames = "ProductsWithCategory", key = "{#name, #pageNumber}")
+    @Cacheable(cacheNames = "ProductsWithCategory", key = "{#name, #pageNumber, #sortCriteria}")
     public ProductPaginationDto getProductsWithCategory(String name, int pageNumber, SortCriteria sortCriteria) {
         Category category = categoryRepository.findByNameIgnoreCase(name);
         if (category == null) {
