@@ -3,19 +3,21 @@
 E-commerce project for selling embroidery and handmade stuff. This project is now used commercially.
 (Frontend side project: https://github.com/NorbertWojtowicz/embroidery-shop-frontend)
 
-# How to test the application yourself?
-Project is currently used commercially, but testing version is available at:
->http://34.135.102.223/shop
+(The test server is no longer available)
 
-For better experience, I reccommend using the frontend application available at:
->http://34.135.102.223
+~~# How to test the application yourself?~~
+~~Project is currently used commercially, but testing version is available at:~~
+~~>http://34.135.102.223/shop~~
 
- For testing purposes, You can use test admin user:
-Email | *testUser@gmail.com* 
---- | ---
-**Password** | *T3stPa$$word* 
+~~For better experience, I reccommend using the frontend application available at:~~
+~~>http://34.135.102.223~~
 
-(Database already contains about 100 products and 7 categories)
+~~For testing purposes, You can use test admin user:~~
+~~Email | *testUser@gmail.com* ~~
+--- | ---~~
+~~**Password** | *T3stPa$$word*~~ 
+
+~~(Database already contains about 100 products and 7 categories)~~
 # Database
 ## Schema manager
 Project uses **liquibase** to manage database schema changes.
